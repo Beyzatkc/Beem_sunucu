@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BeemSunucuApplication {
 
 	public static void main(String[] args) {
+		System.out.println("Servis çalıştı");
 		SpringApplication.run(BeemSunucuApplication.class, args);
 	}
 
