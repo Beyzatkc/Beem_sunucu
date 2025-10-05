@@ -20,6 +20,8 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
+    private String Biography;
+
     public User(){}
 
 
@@ -51,5 +53,13 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getBiography() {
+        return Biography;
+    }
+
+    public void setBiography(String biography) {
+        Biography = biography;
     }
 }
