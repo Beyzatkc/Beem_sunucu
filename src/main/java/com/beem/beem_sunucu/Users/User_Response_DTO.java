@@ -1,17 +1,27 @@
-package Users;
+package com.beem.beem_sunucu.Users;
 
 import java.time.LocalDateTime;
 
-public class user_DTO {
+public class User_Response_DTO {
     private Long id;
     private String username;
     private String email;
-    private String password;
     private String name;
     private String surname;
     private String profile;
     private LocalDateTime Date;
     private String biography;
+
+    public User_Response_DTO(Long id, String username, String email, String name, String surname, String profile, LocalDateTime date, String biography) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.name = name;
+        this.surname = surname;
+        this.profile = profile;
+        Date = date;
+        this.biography = biography;
+    }
 
     public Long getId() {
         return id;
@@ -35,14 +45,6 @@ public class user_DTO {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getName() {
