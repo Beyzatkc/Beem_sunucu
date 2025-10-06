@@ -5,6 +5,7 @@ public class UserDTO{
     private Long id;
     private String username;
     private String biography;
+    private boolean followed = false;
 
     public UserDTO(){
 
@@ -14,6 +15,14 @@ public class UserDTO{
         this.id = user.getId();
         this.username = user.getUsername();
         this.biography = user.getBiography();
+    }
+
+    public boolean isFollow() {
+        return followed;
+    }
+
+    public void setFollow(boolean followed) {
+        this.followed = followed;
     }
 
     public Long getId() {

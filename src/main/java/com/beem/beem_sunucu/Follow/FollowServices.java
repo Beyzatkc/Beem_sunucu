@@ -74,24 +74,41 @@ public class FollowServices {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
         }
         List<Follow> followingList = followRepository.findByFollowingId(id);
-        if(followingList==null){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Following users null");
-        }
 
-        List<UserDTO> list = new ArrayList<>();
         if(followingList.isEmpty()){
-            return list;
+            return new ArrayList<>();
         }
 
-        for(Follow follow: followingList){
-            list.add(
-                    new UserDTO(
-                            userRepository.findById(follow.getFollowedId()).orElse(new User())
-                    )
+        List<Long> IdList = followingList.stream().map(Follow::getFollowedId).toList();
+
+        List<UserDTO> DTOList = userRepository.findAllById(IdList).stream().map(UserDTO::new).peek(userDTO -> {
+            userDTO.setFollow(true);
+        }).toList();
+
+        return DTOList;
+    }
+
+    @Transactional
+    public List<UserDTO> otherUserFollowing(Long myid, Long targetid){
+        if(!userRepository.existsById(targetid)){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
+        }
+
+        List<Long> targetUserfollowingList = followRepository.findByFollowingId(targetid).stream().map(Follow::getFollowedId).toList();
+        if(targetUserfollowingList.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        List<Long> myFollowingList = followRepository.findByFollowingId(myid).stream().map(Follow::getFollowedId).toList();
+
+        List<UserDTO> DTOList = userRepository.findAllById(targetUserfollowingList).stream().map(UserDTO::new).peek(userDTO ->{
+            userDTO.setFollow(
+                    myFollowingList.contains(userDTO.getId())
             );
-        }
+        }).toList();
 
-        return list;
+        return DTOList;
+
     }
 
 
