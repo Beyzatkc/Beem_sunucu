@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/users")
 public class User_Controller {
@@ -26,5 +28,16 @@ public class User_Controller {
     public ResponseEntity<User_Response_DTO>login(@RequestBody Login_DTO loginDto){
         User_Response_DTO responseDTO  = userService.Login(loginDto.getPassword(),loginDto.getUsername());
         return ResponseEntity.ok(responseDTO);
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request){
+        String email = request.get("email");
+        userService.forgotPassword(email);
+        return ResponseEntity.ok("Şifre sıfırlama linki email adresinize gönderildi.");
+    }
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordDTO dto){
+        userService.resetPassword(dto.getToken(), dto.getNewPassword());
+        return ResponseEntity.ok("Şifreniz başarıyla değiştirildi.");
     }
 }

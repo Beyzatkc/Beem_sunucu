@@ -4,15 +4,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 public class User_service {
     private final User_Repo userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    public User_service(User_Repo userRepo, PasswordEncoder passwordEncoder) {
+    public User_service(User_Repo userRepo, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
     @Transactional
     public void Register(User_Request_DTO user){
@@ -23,8 +26,6 @@ public class User_service {
         if(userRepo.existsByEmail(user.getEmail())){
             throw new CustomExceptions.UserAlreadyExistsException("Bu Email zaten kayıtlı");
         }
-
-
         User entity=new User();
         entity.setUsername(user.getUsername());
         entity.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -44,5 +45,29 @@ public class User_service {
             throw new CustomExceptions.AuthenticationException("Parola hatalı.");
         }
        return new User_Response_DTO(user.getId(), user.getUsername(), user.getEmail(), user.getName(), user.getSurname(),user.getProfile(),user.getDate(),user.getBiography());
+    }
+    public void forgotPassword(String email){
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(()->new CustomExceptions.AuthenticationException("Email bulunamadı."));
+        String token = UUID.randomUUID().toString();
+        user.setResetToken(token);
+        user.setTokenExpiry(LocalDateTime.now().plusHours(1));
+        userRepo.save(user);
+        emailService.sendResetEmail(user.getEmail(), token);
+    }
+    public void resetPassword(String token,String newPassword){
+        if (newPassword.length() < 6) {
+            throw new CustomExceptions.ValidationException("Şifre en az 6 karakter olmalı");
+        }
+        User user = userRepo.findByResetToken(token)
+                .orElseThrow(() -> new CustomExceptions.AuthenticationException("Geçersiz veya süresi dolmuş"));
+
+        if (user.getTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new CustomExceptions.AuthenticationException("Süresi dolmuş");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);
+        user.setTokenExpiry(null);
+        userRepo.save(user);
     }
 }
