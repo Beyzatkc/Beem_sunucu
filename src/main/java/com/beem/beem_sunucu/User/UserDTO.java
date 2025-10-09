@@ -17,6 +17,13 @@ public class UserDTO{
         this.biography = user.getBiography();
     }
 
+    public UserDTO(User user, boolean follow) {
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.biography = user.getBiography();
+        this.followed = follow;
+    }
+
     public boolean isFollow() {
         return followed;
     }

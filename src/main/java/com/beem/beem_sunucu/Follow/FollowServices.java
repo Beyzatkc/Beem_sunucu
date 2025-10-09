@@ -3,13 +3,16 @@ package com.beem.beem_sunucu.Follow;
 import com.beem.beem_sunucu.User.User;
 import com.beem.beem_sunucu.User.UserDTO;
 import com.beem.beem_sunucu.User.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.data.domain.Pageable;
+
+import java.util.*;
 
 @Service
 public class FollowServices {
@@ -68,28 +71,27 @@ public class FollowServices {
     }
 
     @Transactional
-    public List<UserDTO> userFollowing(Long id){
+    public List<UserDTO> userFollowing(Long id, int page, int size){
 
         if(!userRepository.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
         }
-        List<Follow> followingList = followRepository.findByFollowingId(id);
+        List<Long> followingList = followRepository.findByFollowingId(id)
+                .stream().map(Follow::getFollowedId)
+                .toList();
 
         if(followingList.isEmpty()){
-            return new ArrayList<>();
+            Collections.emptyList();
         }
 
-        List<Long> IdList = followingList.stream().map(Follow::getFollowedId).toList();
-
-        List<UserDTO> DTOList = userRepository.findAllById(IdList).stream().map(UserDTO::new).peek(userDTO -> {
-            userDTO.setFollow(true);
-        }).toList();
-
-        return DTOList;
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> userPage = userRepository.findAllByIdIn(followingList,pageable);
+        return userPage.getContent()
+                .stream().map(user -> new UserDTO(user,true)).toList();
     }
 
     @Transactional
-    public List<UserDTO> otherUserFollowing(Long myid, Long targetid){
+    public List<UserDTO> otherUserFollowing(Long myid, Long targetid, int page, int size){
         if(!userRepository.existsById(targetid)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
         }
@@ -99,16 +101,14 @@ public class FollowServices {
             return new ArrayList<>();
         }
 
-        List<Long> myFollowingList = followRepository.findByFollowingId(myid).stream().map(Follow::getFollowedId).toList();
+        Set<Long> myFollowingList = new HashSet<>(followRepository.findByFollowingId(myid).stream().map(Follow::getFollowedId).toList());
+        Pageable pageable = PageRequest.of(page,size);
 
-        List<UserDTO> DTOList = userRepository.findAllById(targetUserfollowingList).stream().map(UserDTO::new).peek(userDTO ->{
-            userDTO.setFollow(
-                    myFollowingList.contains(userDTO.getId())
-            );
-        }).toList();
+        Page<User> userPage = userRepository.findAllByIdIn(targetUserfollowingList, pageable);
 
-        return DTOList;
 
+        return userPage.getContent()
+                .stream().map(user -> new UserDTO(user, myFollowingList.contains(user.getId()))).toList();
     }
 
 

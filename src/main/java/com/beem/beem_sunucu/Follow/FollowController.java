@@ -28,13 +28,18 @@ public class FollowController {
     }
 
     @GetMapping("/userFollowing/{id}")
-    public List<UserDTO> userFollowing(@PathVariable Long id){
-        return services.userFollowing(id);
+    public List<UserDTO> userFollowing(@PathVariable Long id,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "20") int size){
+        return services.userFollowing(id,page,size);
     }
 
     @GetMapping("/otherUser/{myid}/{targetid}")
     public List<UserDTO> otherUserFollowing(@PathVariable Long myid,
-                                            @PathVariable Long targetid) {
+                                            @PathVariable Long targetid,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "20") int size ) {
+        return services.otherUserFollowing(myid,targetid,page,size);
     }
 
 }
