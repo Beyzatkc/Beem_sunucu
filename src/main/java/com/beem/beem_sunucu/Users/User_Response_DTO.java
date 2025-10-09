@@ -22,6 +22,15 @@ public class User_Response_DTO {
         Date = date;
         this.biography = biography;
     }
+    public User_Response_DTO(User user){
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.email = user.getEmail();
+        this.name = user.getName();
+        this.surname = user.getSurname();
+        this.profile = user.getProfile();
+        this.biography = user.getBiography();
+    }
 
     public Long getId() {
         return id;

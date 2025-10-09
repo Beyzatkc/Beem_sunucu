@@ -26,7 +26,7 @@ public class Post {
     @Column(name = "number_of_likes")
     private int numberofLikes = 0;
 
-    @Column(nullable = false)
+    @Column(nullable = false,name = "postDate")
     private LocalDateTime postDate;
 
     public Long getPostId() {
