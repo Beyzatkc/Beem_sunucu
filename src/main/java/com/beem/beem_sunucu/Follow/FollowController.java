@@ -1,7 +1,6 @@
 package com.beem.beem_sunucu.Follow;
 
-import com.beem.beem_sunucu.User.UserDTO;
-import com.beem.beem_sunucu.User.UserRepository;
+import com.beem.beem_sunucu.Users.User_Response_DTO;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,14 +27,14 @@ public class FollowController {
     }
 
     @GetMapping("/userFollowing/{id}")
-    public List<UserDTO> userFollowing(@PathVariable Long id,
-                                       @RequestParam(defaultValue = "0") int page,
-                                       @RequestParam(defaultValue = "20") int size){
+    public List<FollowUserResponseDTO> userFollowing(@PathVariable Long id,
+                                                 @RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "20") int size){
         return services.userFollowing(id,page,size);
     }
 
     @GetMapping("/otherUser/{myid}/{targetid}")
-    public List<UserDTO> otherUserFollowing(@PathVariable Long myid,
+    public List<FollowUserResponseDTO> otherUserFollowing(@PathVariable Long myid,
                                             @PathVariable Long targetid,
                                             @RequestParam(defaultValue = "0") int page,
                                             @RequestParam(defaultValue = "20") int size ) {
