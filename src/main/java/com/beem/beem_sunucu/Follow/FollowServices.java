@@ -1,8 +1,8 @@
 package com.beem.beem_sunucu.Follow;
 
-import com.beem.beem_sunucu.User.User;
-import com.beem.beem_sunucu.User.UserDTO;
-import com.beem.beem_sunucu.User.UserRepository;
+import com.beem.beem_sunucu.Users.User;
+import com.beem.beem_sunucu.Users.User_Repo;
+import com.beem.beem_sunucu.Users.User_Response_DTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -18,9 +18,9 @@ import java.util.*;
 public class FollowServices {
 
     private final FollowRepository followRepository;
-    private final UserRepository userRepository;
+    private final User_Repo userRepository;
 
-    public FollowServices(FollowRepository followRepository, UserRepository userRepository){
+    public FollowServices(FollowRepository followRepository, User_Repo userRepository){
         this.followRepository = followRepository;
         this.userRepository = userRepository;
     }
@@ -71,7 +71,7 @@ public class FollowServices {
     }
 
     @Transactional
-    public List<UserDTO> userFollowing(Long id, int page, int size){
+    public List<FollowUserResponseDTO> userFollowing(Long id, int page, int size){
 
         if(!userRepository.existsById(id)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
@@ -87,11 +87,11 @@ public class FollowServices {
         Pageable pageable = PageRequest.of(page, size);
         Page<User> userPage = userRepository.findAllByIdIn(followingList,pageable);
         return userPage.getContent()
-                .stream().map(user -> new UserDTO(user,true)).toList();
+                .stream().map(user -> new FollowUserResponseDTO(user,true)).toList();
     }
 
     @Transactional
-    public List<UserDTO> otherUserFollowing(Long myid, Long targetid, int page, int size){
+    public List<FollowUserResponseDTO> otherUserFollowing(Long myid, Long targetid, int page, int size){
         if(!userRepository.existsById(targetid)){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
         }
@@ -108,7 +108,7 @@ public class FollowServices {
 
 
         return userPage.getContent()
-                .stream().map(user -> new UserDTO(user, myFollowingList.contains(user.getId()))).toList();
+                .stream().map(user -> new FollowUserResponseDTO(user, myFollowingList.contains(user.getId()))).toList();
     }
 
 
