@@ -57,8 +57,8 @@ public class Post_Service {
         like.setUser(user);
         postofLikeRepo.saveAndFlush(like);
 
-        post.setNumberofLikes(post.getNumberofLikes() + 1);
-        postRepo.save(post);
+        int newCount=post.getNumberofLikes() + 1;
+        postRepo.updateLikeCount(postId, newCount);
 
         return "Gönderi beğenildi";
     }
@@ -68,14 +68,15 @@ public class Post_Service {
         Optional<Post> postdb = postRepo.findById(postId);
         if (postdb.isPresent()) {
             Post post = postdb.get();
-            post.setNumberofLikes(Math.max(0, post.getNumberofLikes() - 1));
-            postRepo.save(post);//TEKRAR SAVELEMESİN
+            int newCount = Math.max(0, post.getNumberofLikes() - 1);
+            postRepo.updateLikeCount(postId, newCount);
         }
         return "Beğeni kaldırıldı";
     }
-    public List<User_Response_DTO> users_who_like(Long postId,int page, int size){
-        Pageable pageable = PageRequest.of(page, page, begenen arklar once);
-        List<Post_Like>posts_like=postofLikeRepo.findByPost_PostId(postId,pageable).getContent();
+    public List<User_Response_DTO> users_who_like(Long postId, Long currentUserId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<Post_Like> posts_like = postofLikeRepo.findLikesOrderedByFollow(postId, currentUserId, pageable).getContent();
+
         return posts_like.stream().map(postLike -> new User_Response_DTO(postLike.getUser())).toList();
     }
     //ANASAYFA GONDEİRLERİ GELSİNNNN
