@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Posts;
 
+import com.beem.beem_sunucu.Follow.FollowRepository;
 import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
@@ -14,12 +15,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class Post_Service {
+    private final FollowRepository followRepository;
     private final User_Repo userRepo;
     private final Post_Repo postRepo;
     private final Postof_Like_Repo postofLikeRepo;
 
 
-    public Post_Service(User_Repo userRepo, Post_Repo postRepo, Postof_Like_Repo postofLikeRepo) {
+    public Post_Service(FollowRepository followRepository, User_Repo userRepo, Post_Repo postRepo, Postof_Like_Repo postofLikeRepo) {
+        this.followRepository = followRepository;
         this.userRepo = userRepo;
         this.postRepo = postRepo;
         this.postofLikeRepo = postofLikeRepo;
@@ -59,7 +62,6 @@ public class Post_Service {
 
         int newCount=post.getNumberofLikes() + 1;
         postRepo.updateLikeCount(postId, newCount);
-
         return "Gönderi beğenildi";
     }
     public String remove_post_likes(Long postId, Long userId){
@@ -75,9 +77,25 @@ public class Post_Service {
     }
     public List<User_Response_DTO> users_who_like(Long postId, Long currentUserId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        List<Post_Like> posts_like = postofLikeRepo.findLikesOrderedByFollow(postId, currentUserId, pageable).getContent();
-
+        Page<Post_Like> posts_like_page = (Page<Post_Like>) postofLikeRepo.findPostLikesWithFollowOrder(postId, currentUserId, pageable);
+        List<Post_Like> posts_like = posts_like_page.getContent();
         return posts_like.stream().map(postLike -> new User_Response_DTO(postLike.getUser())).toList();
     }
-    //ANASAYFA GONDEİRLERİ GELSİNNNN
+
+    public List<Post_DTO_Response> homePagePosts(Long currentUserId, int page, int size) {
+        //takip edilen kullanicialri getirid
+        List<Long> followIds = followRepository.findFollowedIds(currentUserId);
+
+        //takip eidlen kullanıcıların begendigi gonderiler
+        List<Long> followLikes = postofLikeRepo.findPostIdsByUsers(followIds);
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        //dbden sırali skeilde cektik
+        Page<Post> postPage = postRepo.findHomePagePostsJPQL(followIds, followLikes, pageable);
+
+        List<Post> posts = postPage.getContent();
+        return posts.stream().map(post -> new Post_DTO_Response(post)).toList();
+    }
+
 }

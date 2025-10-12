@@ -14,5 +14,23 @@ public interface Post_Repo extends JpaRepository<Post,Long> {
     @Modifying
     @Query("UPDATE Post p SET p.numberofLikes = :numberOfLikes WHERE p.postId = :postId")
     void updateLikeCount(@Param("postId") Long postId, @Param("numberOfLikes") int numberOfLikes);
+
+    @Query("""
+    SELECT p FROM Post p
+    LEFT JOIN FETCH p.user u
+    ORDER BY 
+        p.postDate DESC,
+        (CASE WHEN u.userId IN :followIds THEN 100 ELSE 0 END +
+         CASE WHEN p.postId IN :followLikes THEN 70 ELSE 0 END +
+         CASE WHEN p.numberofLikes > 50 THEN 30
+              WHEN p.numberofLikes > 10 THEN 15
+              ELSE 0 END +
+         CASE WHEN u.userId NOT IN :followIds THEN 10 ELSE 0 END) DESC
+    """)
+    Page<Post> findHomePagePostsJPQL(
+            @Param("followIds") List<Long> followIds,
+            @Param("followLikes") List<Long> followLikes,
+            Pageable pageable
+    );
 }
 

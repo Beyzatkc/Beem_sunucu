@@ -17,6 +17,16 @@ public class Post_DTO_Response {
 
     private LocalDateTime postDate;
 
+    private int point;
+
+    public int getPoint() {
+        return point;
+    }
+
+    public void setPoint(int point) {
+        this.point = point;
+    }
+
     public Long getPost_id() {
         return post_id;
     }
@@ -64,6 +74,7 @@ public class Post_DTO_Response {
     public void setPostDate(LocalDateTime postDate) {
         this.postDate = postDate;
     }
+
 
     public Post_DTO_Response(Post post) {
         this.post_id = post.getPostId();
