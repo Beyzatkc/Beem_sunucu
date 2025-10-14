@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface Post_Repo extends JpaRepository<Post,Long> {
-    Page<Post> findByKisiId(Long userId, Pageable pageable);
+    Page<Post> findByUser_Id(Long userId, Pageable pageable);
     @Modifying
     @Query("UPDATE Post p SET p.numberofLikes = :numberOfLikes WHERE p.postId = :postId")
     void updateLikeCount(@Param("postId") Long postId, @Param("numberOfLikes") int numberOfLikes);

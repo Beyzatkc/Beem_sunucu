@@ -1,9 +1,11 @@
 package com.beem.beem_sunucu.Follow;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     List<Follow> findByFollowedId(Long followedId);

@@ -1,6 +1,5 @@
 package com.beem.beem_sunucu.Follow;
 
-import com.beem.beem_sunucu.Users.User_Response_DTO;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

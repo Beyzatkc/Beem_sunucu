@@ -39,7 +39,7 @@ public class Post_Service {
     }
     public List<Post_DTO_Response> fetch_users_posts(Long userId,int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("postDate").descending());
-        List<Post>posts=postRepo.findByKisiId(userId,pageable).getContent();
+        List<Post>posts=postRepo.findByUser_Id(userId,pageable).getContent();
         return posts.stream().map(post -> new Post_DTO_Response(post)).toList();
     }
     public String Like_the_post(Long postId, Long userId){
