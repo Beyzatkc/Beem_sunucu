@@ -10,12 +10,11 @@ import java.util.UUID;
 public class User_service {
     private final User_Repo userRepo;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    //private final EmailService emailService;
 
-    public User_service(User_Repo userRepo, PasswordEncoder passwordEncoder, EmailService emailService) {
+    public User_service(User_Repo userRepo, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
     }
     @Transactional
     public void Register(User_Request_DTO user){
@@ -46,6 +45,7 @@ public class User_service {
         }
        return new User_Response_DTO(user.getId(), user.getUsername(), user.getEmail(), user.getName(), user.getSurname(),user.getProfile(),user.getDate(),user.getBiography());
     }
+    /*
     public void forgotPassword(String email){
         User user = userRepo.findByEmail(email)
                 .orElseThrow(()->new CustomExceptions.AuthenticationException("Email bulunamadı."));
@@ -69,5 +69,5 @@ public class User_service {
         user.setResetToken(null);
         user.setTokenExpiry(null);
         userRepo.save(user);
-    }
+    }*/
 }

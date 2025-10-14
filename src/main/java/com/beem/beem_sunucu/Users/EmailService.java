@@ -1,3 +1,5 @@
+
+/*
 package com.beem.beem_sunucu.Users;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,3 +22,4 @@ public class EmailService {
         mailSender.send(message);
     }
 }
+*/

@@ -29,6 +29,7 @@ public class User_Controller {
         User_Response_DTO responseDTO  = userService.Login(loginDto.getPassword(),loginDto.getUsername());
         return ResponseEntity.ok(responseDTO);
     }
+    /*
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request){
         String email = request.get("email");
@@ -40,4 +41,5 @@ public class User_Controller {
         userService.resetPassword(dto.getToken(), dto.getNewPassword());
         return ResponseEntity.ok("Şifreniz başarıyla değiştirildi.");
     }
+     */
 }

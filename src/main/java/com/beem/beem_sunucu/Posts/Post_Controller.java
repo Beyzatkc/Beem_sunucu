@@ -31,30 +31,16 @@ public class Post_Controller {
         return postService.fetch_users_posts(userId, page, size);
     }
 
-    @PostMapping("/{postId}/postLike")
-    public ResponseEntity<String> likeThePost(
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<String> toggleLike(
             @PathVariable Long postId,
             @RequestParam Long userId
     ) {
         try {
-            String result = postService.Like_the_post(postId, userId);
+            String result = postService.toggleLike(postId, userId);
             return ResponseEntity.ok(result);
         } catch (CustomExceptions.AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Bir hata oluştu: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/{postId}/unLike")
-    public ResponseEntity<String> unlikeThePost(
-            @PathVariable Long postId,
-            @RequestParam Long userId
-    ) {
-        try {
-            String result = postService.remove_post_likes(postId, userId);
-            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Bir hata oluştu: " + e.getMessage());
@@ -89,7 +75,7 @@ public class Post_Controller {
         if (posts.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(posts); // 200 OK
+        return ResponseEntity.ok(posts);
     }
 
 }
