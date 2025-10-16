@@ -20,17 +20,19 @@ public interface Post_Repo extends JpaRepository<Post,Long> {
 
     @Query(value = """
     SELECT p.* FROM posts p
-    LEFT JOIN users u ON p.user_id = u.user_id
+    LEFT JOIN users u ON p.user_id = u.id
+    WHERE p.user_id <> :currentUserId
     ORDER BY 
         p.post_date DESC,
-        (CASE WHEN u.user_id IN :followIds THEN 100 ELSE 0 END +
+        (CASE WHEN u.id IN :followIds THEN 100 ELSE 0 END +
          CASE WHEN p.post_id IN :followLikes THEN 70 ELSE 0 END +
          (CASE WHEN p.number_of_likes > 50 THEN 30
                WHEN p.number_of_likes > 10 THEN 15
                ELSE 0 END) +
-         CASE WHEN u.user_id NOT IN :followIds THEN 10 ELSE 0 END) DESC
+         CASE WHEN u.id NOT IN :followIds THEN 10 ELSE 0 END) DESC
     """, nativeQuery = true)
     Page<Post> findHomePagePostsNative(
+            @Param("currentUserId") Long currentUserId,
             @Param("followIds") List<Long> followIds,
             @Param("followLikes") List<Long> followLikes,
             Pageable pageable

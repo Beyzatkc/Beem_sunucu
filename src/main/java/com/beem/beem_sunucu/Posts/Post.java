@@ -1,6 +1,7 @@
 package com.beem.beem_sunucu.Posts;
 
 import com.beem.beem_sunucu.Users.User;
+import com.beem.beem_sunucu.Users.User_Response_DTO;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;

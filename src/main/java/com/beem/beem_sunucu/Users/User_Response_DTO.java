@@ -29,6 +29,7 @@ public class User_Response_DTO {
         this.name = user.getName();
         this.surname = user.getSurname();
         this.profile = user.getProfile();
+        Date = user.getDate();
         this.biography = user.getBiography();
     }
 

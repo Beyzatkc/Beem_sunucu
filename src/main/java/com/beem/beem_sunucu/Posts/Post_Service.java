@@ -30,7 +30,7 @@ public class Post_Service {
         this.postRepo = postRepo;
         this.postofLikeRepo = postofLikeRepo;
     }
-    public void postCreate(Post_DTO_Request postDto){
+    public Post_DTO_Response postCreate(Post_DTO_Request postDto){
         Optional<User> user = userRepo.findById(postDto.getUser_id());
         if (user.isEmpty()) {
             throw new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı.");
@@ -42,6 +42,7 @@ public class Post_Service {
         post.setNumberofLikes(0);
         post.setPostDate(LocalDateTime.now());
         postRepo.save(post);
+        return new Post_DTO_Response(post);
     }
     public List<Post_DTO_Response> fetch_users_posts(Long userId,int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("postDate").descending());
@@ -78,10 +79,11 @@ public class Post_Service {
     }
     public List<User_Response_DTO> users_who_like(Long postId, Long currentUserId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Post_Like> posts_like_page = (Page<Post_Like>) postofLikeRepo.findPostLikesWithFollowOrder(postId, currentUserId, pageable);
+        Page<Post_Like> posts_like_page = postofLikeRepo.findPostLikesWithFollowOrder(postId, currentUserId, pageable);
         List<Post_Like> posts_like = posts_like_page.getContent();
         return posts_like.stream().map(postLike -> new User_Response_DTO(postLike.getUser())).toList();
     }
+
 
     public List<Post_DTO_Response> homePagePosts(Long currentUserId, int page, int size) {
         //takip edilen kullanicialri getirid
@@ -93,7 +95,7 @@ public class Post_Service {
         Pageable pageable = PageRequest.of(page, size);
 
         //dbden sırali skeilde cektik
-        Page<Post> postPage = postRepo.findHomePagePostsNative(followIds, followLikes, pageable);
+        Page<Post> postPage = postRepo.findHomePagePostsNative( currentUserId, followIds, followLikes, pageable);
 
         List<Post> posts = postPage.getContent();
         return posts.stream().map(post -> new Post_DTO_Response(post)).toList();

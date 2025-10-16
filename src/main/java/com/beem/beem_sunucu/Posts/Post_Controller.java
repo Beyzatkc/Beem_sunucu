@@ -16,10 +16,10 @@ public class Post_Controller {
     public Post_Controller(Post_Service postService) {
         this.postService = postService;
     }
+    
     @PostMapping("/addPost")
-    public ResponseEntity<String> addPost(@RequestBody Post_DTO_Request postDto) {
-        postService.postCreate(postDto);
-        return ResponseEntity.ok("Post başarıyla eklendi.");
+    public Post_DTO_Response addPost(@RequestBody Post_DTO_Request postDto) {
+        return postService.postCreate(postDto);
     }
 
     @GetMapping("/getUserPosts") //

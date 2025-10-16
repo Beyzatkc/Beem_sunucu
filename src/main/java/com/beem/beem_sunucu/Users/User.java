@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "kisi", uniqueConstraints = {
+@Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email")
 })
@@ -128,4 +128,5 @@ public class User {
     public void setTokenExpiry(LocalDateTime tokenExpiry) {
         this.tokenExpiry = tokenExpiry;
     }
+
 }
