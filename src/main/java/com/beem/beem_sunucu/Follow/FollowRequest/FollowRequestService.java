@@ -29,7 +29,11 @@ public class FollowRequestService {
 
     @Transactional
     public FollowResponseDTO sendRequest(FollowRequestDTO requestDTO){
-        if(followRequestRepositorty.existsByRequesterIdAndRequestedId(requestDTO.getRequesterId(),requestDTO.getRequestedId())){
+        if(followRequestRepositorty.existsByRequesterIdAndRequestedIdAndStatusIn(
+                requestDTO.getRequesterId(),
+                requestDTO.getRequestedId(),
+                List.of(FollowRequestStatus.ACCEPTED, FollowRequestStatus.PENDING))
+        ){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"The request already exists.");
         }
 
