@@ -22,6 +22,7 @@ public class Follow {
     @Column(nullable = false)
     private LocalDateTime date;
 
+
     @PrePersist
     protected void onCreat(){
         this.date = LocalDateTime.now();

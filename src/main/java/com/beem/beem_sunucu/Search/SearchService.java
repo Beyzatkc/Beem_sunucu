@@ -1,0 +1,9 @@
+package com.beem.beem_sunucu.Search;
+
+import org.springframework.stereotype.Service;
+
+
+
+@Service
+public class SearchService {
+}
