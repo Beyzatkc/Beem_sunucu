@@ -17,7 +17,7 @@ public class User_service {
         this.passwordEncoder = passwordEncoder;
     }
     @Transactional
-    public void Register(User_Request_DTO user){
+    public User_Response_DTO register(User_Request_DTO user){
         if(userRepo.existsByUsername(user.getUsername())){
             throw new CustomExceptions.UserAlreadyExistsException("Kullanıcı adı zaten alınmış.");
         }
@@ -35,15 +35,16 @@ public class User_service {
         entity.setProfile(user.getProfile());
         entity.setEmail(user.getEmail());
         userRepo.saveAndFlush(entity);
+        return new User_Response_DTO(entity);
     }
-    public User_Response_DTO Login(String password,String username){
+    public User_Response_DTO login(String password,String username){
         User user=userRepo
                 .findByUsername(username)
                 .orElseThrow(()->new CustomExceptions.AuthenticationException("Kullanıcı adı hatalı."));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new CustomExceptions.AuthenticationException("Parola hatalı.");
         }
-       return new User_Response_DTO(user.getId(), user.getUsername(), user.getEmail(), user.getName(), user.getSurname(),user.getProfile(),user.getDate(),user.getBiography());
+       return new User_Response_DTO(user);
     }
     /*
     public void forgotPassword(String email){

@@ -20,13 +20,14 @@ public class User_Controller {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String>register(@Valid @RequestBody User_Request_DTO userRequestDto){
-        userService.Register(userRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Kayıt başarılı!");
+    public ResponseEntity<User_Response_DTO> register(@Valid @RequestBody User_Request_DTO userRequestDto){
+        User_Response_DTO dto = userService.register(userRequestDto);
+        return ResponseEntity.ok(dto);
     }
+
     @PostMapping("/login")
     public ResponseEntity<User_Response_DTO>login(@RequestBody Login_DTO loginDto){
-        User_Response_DTO responseDTO  = userService.Login(loginDto.getPassword(),loginDto.getUsername());
+        User_Response_DTO responseDTO  = userService.login(loginDto.getPassword(),loginDto.getUsername());
         return ResponseEntity.ok(responseDTO);
     }
     /*

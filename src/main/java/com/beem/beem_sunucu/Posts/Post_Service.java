@@ -101,4 +101,34 @@ public class Post_Service {
         return posts.stream().map(post -> new Post_DTO_Response(post)).toList();
     }
 
+    public void deletePost(Long postId,Long userId){
+        Post post = postRepo.findById(postId)
+                .orElseThrow(() -> new CustomExceptions.NotFoundException("Post bulunamadı."));
+
+        if(userId==null){
+            throw new CustomExceptions.AuthorizationException("Bu gönderiyi silme yetkiniz yok.");
+        }
+        if(!post.getUser().getId().equals(userId)){
+            throw new CustomExceptions.NotFoundException("Kişi bulunamadı");
+        }
+        postRepo.delete(post);
+    }
+
+    public void updatePost(Long postId,Long userId,Post_DTO_Update postDtoUpdate){
+        Post post = postRepo.findById(postId)
+                .orElseThrow(() -> new CustomExceptions.NotFoundException("Post bulunamadı."));
+
+        if(userId==null){
+            throw new CustomExceptions.AuthorizationException("Bu gönderiyi silme yetkiniz yok.");
+        }
+        if(!post.getUser().getId().equals(userId)){
+            throw new CustomExceptions.AuthorizationException("Bu gönderiyi güncelleme yetkiniz yok.");
+        }
+
+        post.setPostName(postDtoUpdate.getPostName());
+        post.setContents(postDtoUpdate.getContents());
+        post.setPostDate(LocalDateTime.now());
+        postRepo.save(post);
+    }
+
 }
