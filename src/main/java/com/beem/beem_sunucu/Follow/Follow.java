@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Follow;
 
+import com.beem.beem_sunucu.Follow.FollowRequest.FollowSendRequest;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -21,12 +22,18 @@ public class Follow {
     @Column(nullable = false)
     private LocalDateTime date;
 
+
     @PrePersist
     protected void onCreat(){
         this.date = LocalDateTime.now();
     }
 
     public Follow() {}
+
+    public Follow(FollowSendRequest request){
+        this.followingId = request.getRequesterId();
+        this.followedId = request.getRequestedId();
+    }
 
     public Long getId() {
         return id;

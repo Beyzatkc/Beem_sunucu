@@ -1,6 +1,7 @@
-package com.beem.beem_sunucu.Follow;
+package com.beem.beem_sunucu.Follow.FollowRequest;
 
 
+import com.beem.beem_sunucu.Users.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,11 @@ public class FollowSendRequest {
     }
 
     public FollowSendRequest(){}
+
+    public FollowSendRequest(FollowRequestDTO dto){
+        this.requestedId = dto.getRequestedId();
+        this.requesterId = dto.getRequesterId();
+    }
 
     public Long getId() {
         return id;

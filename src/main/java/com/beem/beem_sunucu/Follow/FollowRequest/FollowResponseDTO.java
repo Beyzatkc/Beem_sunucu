@@ -1,4 +1,4 @@
-package com.beem.beem_sunucu.Follow;
+package com.beem.beem_sunucu.Follow.FollowRequest;
 
 import java.time.LocalDateTime;
 
@@ -19,6 +19,13 @@ public class FollowResponseDTO {
         this.requestedId = requestedId;
         this.status = status;
         this.date = date;
+    }
+    public FollowResponseDTO(FollowSendRequest request){
+        this.id = request.getId();
+        this.requesterId = request.getRequesterId();
+        this.requestedId = request.getRequestedId();
+        this.status = request.getStatus();
+        this.date = request.getDate();
     }
 
     public Long getId() {

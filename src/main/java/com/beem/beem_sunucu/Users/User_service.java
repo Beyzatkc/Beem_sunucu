@@ -10,11 +10,13 @@ import java.util.UUID;
 public class User_service {
     private final User_Repo userRepo;
     private final PasswordEncoder passwordEncoder;
+   // private final EmailService emailService;
     //private final EmailService emailService;
 
     public User_service(User_Repo userRepo, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
+        //this.emailService = emailService;
     }
     @Transactional
     public User_Response_DTO register(User_Request_DTO user){
@@ -54,7 +56,7 @@ public class User_service {
         user.setResetToken(token);
         user.setTokenExpiry(LocalDateTime.now().plusHours(1));
         userRepo.save(user);
-        emailService.sendResetEmail(user.getEmail(), token);
+      //  emailService.sendResetEmail(user.getEmail(), token);
     }
     public void resetPassword(String token,String newPassword){
         if (newPassword.length() < 6) {

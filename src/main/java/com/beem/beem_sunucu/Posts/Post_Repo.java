@@ -18,6 +18,7 @@ public interface Post_Repo extends JpaRepository<Post,Long> {
     @Query("UPDATE Post p SET p.numberofLikes = :numberOfLikes WHERE p.postId = :postId")
     void updateLikeCount(@Param("postId") Long postId, @Param("numberOfLikes") int numberOfLikes);
 
+    Long countByUser_Id(Long userId);
     @Query(value = """
     SELECT p.* FROM posts p
     LEFT JOIN users u ON p.user_id = u.id
