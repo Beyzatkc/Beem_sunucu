@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Posts;
 
+import com.beem.beem_sunucu.Comments.Comment;
 import com.beem.beem_sunucu.Users.User;
 import jakarta.persistence.*;
 
@@ -28,6 +29,12 @@ public class Post {
 
     @Column(nullable = false,name = "postDate")
     private LocalDateTime postDate;
+
+    @OneToMany(mappedBy = "post",cascade = CascadeType.ALL,orphanRemoval = true)
+    private java.util.List<Post_Like> likes = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Comment> yorumlar = new java.util.ArrayList<>();
 
     public Long getPostId() {
         return postId;

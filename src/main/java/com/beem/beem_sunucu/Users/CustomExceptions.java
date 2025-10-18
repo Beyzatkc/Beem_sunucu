@@ -11,8 +11,13 @@ public class CustomExceptions {
             super(message);
         }
     }
-    public static class ValidationException extends RuntimeException {
-        public ValidationException(String message) {
+    public static class  NotFoundException extends RuntimeException {
+        public  NotFoundException(String message) {
+            super(message);
+        }
+    }
+    public static class  AuthorizationException extends RuntimeException {
+        public AuthorizationException(String message) {
             super(message);
         }
     }

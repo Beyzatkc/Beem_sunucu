@@ -11,7 +11,7 @@ public class Post_Like {
     @Column(name="post_likes_id")
     private Long postLikesId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 

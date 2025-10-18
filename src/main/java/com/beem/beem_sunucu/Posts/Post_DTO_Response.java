@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Posts;
 
+import com.beem.beem_sunucu.Users.User_Response_DTO;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
@@ -7,7 +8,7 @@ import java.time.LocalDateTime;
 public class Post_DTO_Response {
     private Long post_id;
 
-    private Long user_id;
+    private User_Response_DTO user;
 
     private String postName;
 
@@ -17,6 +18,14 @@ public class Post_DTO_Response {
 
     private LocalDateTime postDate;
 
+    public User_Response_DTO getUser() {
+        return user;
+    }
+
+    public void setUser(User_Response_DTO user) {
+        this.user = user;
+    }
+
     public Long getPost_id() {
         return post_id;
     }
@@ -25,13 +34,6 @@ public class Post_DTO_Response {
         this.post_id = post_id;
     }
 
-    public Long getUser_id() {
-        return user_id;
-    }
-
-    public void setUser_id(Long user_id) {
-        this.user_id = user_id;
-    }
 
     public String getPostName() {
         return postName;
@@ -65,9 +67,10 @@ public class Post_DTO_Response {
         this.postDate = postDate;
     }
 
+
     public Post_DTO_Response(Post post) {
         this.post_id = post.getPostId();
-        this.user_id = post.getUser().getId();
+        this.user = new User_Response_DTO(post.getUser());
         this.postName = post.getPostName();
         this.contents = post.getContents();
         this.numberof_likes = post.getNumberofLikes();

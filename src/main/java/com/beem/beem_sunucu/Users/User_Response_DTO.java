@@ -12,16 +12,6 @@ public class User_Response_DTO {
     private LocalDateTime Date;
     private String biography;
 
-    public User_Response_DTO(Long id, String username, String email, String name, String surname, String profile, LocalDateTime date, String biography) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.name = name;
-        this.surname = surname;
-        this.profile = profile;
-        Date = date;
-        this.biography = biography;
-    }
     public User_Response_DTO(User user){
         this.id = user.getId();
         this.username = user.getUsername();
@@ -29,6 +19,7 @@ public class User_Response_DTO {
         this.name = user.getName();
         this.surname = user.getSurname();
         this.profile = user.getProfile();
+        Date = user.getDate();
         this.biography = user.getBiography();
     }
 
