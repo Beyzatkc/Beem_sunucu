@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 interface Postof_Like_Repo extends JpaRepository<Post_Like,Long> {
-    long countByPost_PostId(Long postId);
-    Page<Post_Like> findByPost_PostId(Long postId, Pageable pageable);
     Optional<Post_Like> findByPost_PostIdAndUser_Id(Long postId, Long userId);
     @Query(
             value = """

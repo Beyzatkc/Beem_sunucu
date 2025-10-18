@@ -106,10 +106,10 @@ public class Post_Service {
                 .orElseThrow(() -> new CustomExceptions.NotFoundException("Post bulunamadı."));
 
         if(userId==null){
-            throw new CustomExceptions.AuthorizationException("Bu gönderiyi silme yetkiniz yok.");
+            throw new CustomExceptions.AuthorizationException("Kişi bulunamadı");
         }
         if(!post.getUser().getId().equals(userId)){
-            throw new CustomExceptions.NotFoundException("Kişi bulunamadı");
+            throw new CustomExceptions.NotFoundException("Bu gönderiyi silme yetkiniz yok.");
         }
         postRepo.delete(post);
     }
@@ -119,7 +119,7 @@ public class Post_Service {
                 .orElseThrow(() -> new CustomExceptions.NotFoundException("Post bulunamadı."));
 
         if(userId==null){
-            throw new CustomExceptions.AuthorizationException("Bu gönderiyi silme yetkiniz yok.");
+            throw new CustomExceptions.AuthorizationException("Kişi bulunamadı.");
         }
         if(!post.getUser().getId().equals(userId)){
             throw new CustomExceptions.AuthorizationException("Bu gönderiyi güncelleme yetkiniz yok.");
