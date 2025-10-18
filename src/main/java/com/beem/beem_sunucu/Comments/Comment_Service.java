@@ -49,7 +49,6 @@ public class Comment_Service {
     @Transactional
     public List<Comment_DTO_Response>comments(Long postId, int page, int size){
         Page<Comment>comments=commentRepo.findByPost_PostIdOrderByCommentDateDesc(postId, PageRequest.of(page, size));
-
-
+        return null;
     }
 }

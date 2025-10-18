@@ -5,11 +5,16 @@ import com.beem.beem_sunucu.Block.Block;
 import com.beem.beem_sunucu.Block.BlockRepository;
 import com.beem.beem_sunucu.Block.BlockResponseDTO;
 import com.beem.beem_sunucu.Follow.FollowRepository;
+import com.beem.beem_sunucu.Posts.Post;
+import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Posts.Post_Repo;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -41,28 +46,30 @@ public class ProfileService {
     }
 
     @Transactional
-    public ProfileResponse getMyProfile(Long myid){
+    public ProfileResponse getMyProfile(Long myid, int page, int size){
         User user = userRepo.findById(myid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        Long followedCount = followRepository.countByFollowingId(myid);
-        Long followerCount = followRepository.countByFollowedId(myid);
-        Long postCount = postRepo.countByUser_Id(myid);
-        User_Response_DTO iam = new User_Response_DTO(user);
+
+        PageRequest pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(size, 1),
+                Sort.by(Sort.Direction.DESC, "postDate")
+        );
 
         return new ProfileResponse(
-                iam,
-                followedCount,
-                followerCount,
-                Collections.emptyList(),
+                new User_Response_DTO(user),
+                followRepository.countByFollowingId(myid),
+                followRepository.countByFollowedId(myid),
+                postRepo.findByUser_Id(myid, pageable).map(Post_DTO_Response::new),
                 true,
                 false,
                 false,
-                postCount
+                postRepo.countByUser_Id(myid)
         );
     }
 
     @Transactional
-    public ResponseEntity<?> getOtherUserProfile(Long myId, Long targetId) {
+    public ResponseEntity<?> getOtherUserProfile(Long myId, Long targetId, int page, int size) {
         User user = userRepo.findById(targetId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -87,11 +94,19 @@ public class ProfileService {
 
         Long postCount = postRepo.countByUser_Id(targetId);
 
+        PageRequest pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(size, 1),
+                Sort.by(Sort.Direction.DESC, "postDate")
+        );
+
+        Page<Post_DTO_Response> posts = postRepo.findByUser_Id(targetId, pageable).map(Post_DTO_Response::new);
+
         return ResponseEntity.ok(new ProfileResponse(
                 targetUserDto,
                 followedCount,
                 followerCount,
-                Collections.emptyList(),
+                posts,
                 false,
                 isFollowing,
                 isFollower,
@@ -113,5 +128,17 @@ public class ProfileService {
         userRepo.save(user);
 
         return new User_Response_DTO(user);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Post_DTO_Response> getUserPosts(Long userId, int page, int size) {
+        PageRequest pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(size, 1),
+                Sort.by(Sort.Direction.DESC, "postDate")
+        );
+
+        return postRepo.findByUser_Id(userId, pageable)
+                .map(Post_DTO_Response::new);
     }
 }

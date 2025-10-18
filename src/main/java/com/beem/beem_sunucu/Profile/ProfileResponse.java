@@ -2,6 +2,7 @@ package com.beem.beem_sunucu.Profile;
 
 import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ public class ProfileResponse {
     private User_Response_DTO userResponseDto;
     private Long followedCount;
     private Long followerCount;
-    private List<Post_DTO_Response> myPost;
+    private Page<Post_DTO_Response> myPost;
     private boolean isOwnProfile;
     private boolean isFollowing;
     private boolean isFollower;
@@ -19,7 +20,7 @@ public class ProfileResponse {
     public ProfileResponse(){}
 
 
-    public ProfileResponse(User_Response_DTO userResponseDto, Long followedCount, Long followerCount, List<Post_DTO_Response> myPost, boolean isOwnProfile, boolean isFollowing, boolean isFollower, Long postCount) {
+    public ProfileResponse(User_Response_DTO userResponseDto, Long followedCount, Long followerCount, Page<Post_DTO_Response> myPost, boolean isOwnProfile, boolean isFollowing, boolean isFollower, Long postCount) {
         this.userResponseDto = userResponseDto;
         this.followedCount = followedCount;
         this.followerCount = followerCount;
@@ -55,11 +56,11 @@ public class ProfileResponse {
         this.followerCount = followerCount;
     }
 
-    public List<Post_DTO_Response> getMyPost() {
+    public Page<Post_DTO_Response> getMyPost() {
         return myPost;
     }
 
-    public void setMyPost(List<Post_DTO_Response> myPost) {
+    public void setMyPost(Page<Post_DTO_Response> myPost) {
         this.myPost = myPost;
     }
 
