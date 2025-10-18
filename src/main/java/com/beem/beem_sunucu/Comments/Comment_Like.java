@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "commentLike",uniqueConstraints = {@UniqueConstraint(columnNames = {"post_id", "user_id"})})
-public class Commentof_Like {
+public class Comment_Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_likes_id")
@@ -15,7 +15,7 @@ public class Commentof_Like {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = false)
-    private Post post;
+    private Comment comment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -29,12 +29,12 @@ public class Commentof_Like {
         this.commentLikesId = commentLikesId;
     }
 
-    public Post getPost() {
-        return post;
+    public Comment getComment() {
+        return comment;
     }
 
-    public void setPost(Post post) {
-        this.post = post;
+    public void setComment(Comment comment) {
+        this.comment = comment;
     }
 
     public User getUser() {
