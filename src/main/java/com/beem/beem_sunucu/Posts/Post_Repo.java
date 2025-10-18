@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Posts;
 
+import com.beem.beem_sunucu.Users.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,5 +39,7 @@ public interface Post_Repo extends JpaRepository<Post,Long> {
             @Param("followLikes") List<Long> followLikes,
             Pageable pageable
     );
+
+    Page<Post> findByPostNameContainingIgnoreCase(String keyword, Pageable pageable);
 }
 
