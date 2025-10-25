@@ -17,4 +17,6 @@ public interface User_Repo extends JpaRepository<User,Long> {
     Page<User> findByUsernameContainingIgnoreCase(String keyword, Pageable pageable);
 
     Page<User> findAllByIdIn(List<Long> ids, Pageable pageable);
+
+    List<User> findAllByIdIn(List<Long> ids);
 }

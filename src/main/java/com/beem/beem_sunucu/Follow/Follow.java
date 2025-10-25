@@ -31,8 +31,8 @@ public class Follow {
     public Follow() {}
 
     public Follow(FollowSendRequest request){
-        this.followingId = request.getRequesterId();
-        this.followedId = request.getRequestedId();
+        this.followingId = request.getRequester().getId();
+        this.followedId = request.getRequested().getId();
     }
 
     public Long getId() {

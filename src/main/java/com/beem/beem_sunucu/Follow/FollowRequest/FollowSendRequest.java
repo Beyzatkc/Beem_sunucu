@@ -14,11 +14,13 @@ public class FollowSendRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long requesterId;
+    @ManyToOne
+    @JoinColumn(name = "requester_id", nullable = false)
+    private User requester;
 
-    @Column(nullable = false)
-    private Long requestedId;
+    @ManyToOne
+    @JoinColumn(name = "requested_id", nullable = false)
+    private User requested;
 
     @Column(nullable = false)
     private LocalDateTime date;
@@ -35,29 +37,13 @@ public class FollowSendRequest {
 
     public FollowSendRequest(){}
 
-    public FollowSendRequest(FollowRequestDTO dto){
-        this.requestedId = dto.getRequestedId();
-        this.requesterId = dto.getRequesterId();
+    public FollowSendRequest(User requester, User requested){
+        this.requester = requester;
+        this.requested = requested;
     }
 
     public Long getId() {
         return id;
-    }
-
-    public Long getRequesterId() {
-        return requesterId;
-    }
-
-    public void setRequesterId(Long requesterId) {
-        this.requesterId = requesterId;
-    }
-
-    public Long getRequestedId() {
-        return requestedId;
-    }
-
-    public void setRequestedId(Long requestedId) {
-        this.requestedId = requestedId;
     }
 
     public LocalDateTime getDate() {
@@ -74,5 +60,21 @@ public class FollowSendRequest {
 
     public void setStatus(FollowRequestStatus status) {
         this.status = status;
+    }
+
+    public User getRequester() {
+        return requester;
+    }
+
+    public void setRequester(User requester) {
+        this.requester = requester;
+    }
+
+    public User getRequested() {
+        return requested;
+    }
+
+    public void setRequested(User requested) {
+        this.requested = requested;
     }
 }

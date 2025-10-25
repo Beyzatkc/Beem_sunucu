@@ -1,29 +1,31 @@
 package com.beem.beem_sunucu.Follow.FollowRequest;
 
+import com.beem.beem_sunucu.Users.SimpleUserDTO;
+
 import java.time.LocalDateTime;
 
 public class FollowResponseDTO {
 
     private Long id;
-    private Long requesterId;
-    private Long requestedId;
+    private SimpleUserDTO requester;
+    private SimpleUserDTO requested;
     private FollowRequestStatus status;
     private LocalDateTime date;
 
     public FollowResponseDTO() {}
 
-    public FollowResponseDTO(Long id, Long requesterId, Long requestedId,
+    public FollowResponseDTO(Long id, SimpleUserDTO requester, SimpleUserDTO requested,
                              FollowRequestStatus status, LocalDateTime date) {
         this.id = id;
-        this.requesterId = requesterId;
-        this.requestedId = requestedId;
+        this.requester = requester;
+        this.requested = requested;
         this.status = status;
         this.date = date;
     }
-    public FollowResponseDTO(FollowSendRequest request){
+    public FollowResponseDTO(FollowSendRequest request,SimpleUserDTO requester, SimpleUserDTO requested ){
         this.id = request.getId();
-        this.requesterId = request.getRequesterId();
-        this.requestedId = request.getRequestedId();
+        this.requester = requester;
+        this.requested = requested;
         this.status = request.getStatus();
         this.date = request.getDate();
     }
@@ -32,13 +34,6 @@ public class FollowResponseDTO {
         return id;
     }
 
-    public Long getRequesterId() {
-        return requesterId;
-    }
-
-    public Long getRequestedId() {
-        return requestedId;
-    }
 
     public FollowRequestStatus getStatus() {
         return status;
@@ -52,13 +47,6 @@ public class FollowResponseDTO {
         this.id = id;
     }
 
-    public void setRequesterId(Long requesterId) {
-        this.requesterId = requesterId;
-    }
-
-    public void setRequestedId(Long requestedId) {
-        this.requestedId = requestedId;
-    }
 
     public void setStatus(FollowRequestStatus status) {
         this.status = status;
@@ -66,5 +54,21 @@ public class FollowResponseDTO {
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    public SimpleUserDTO getRequester() {
+        return requester;
+    }
+
+    public void setRequester(SimpleUserDTO requester) {
+        this.requester = requester;
+    }
+
+    public SimpleUserDTO getRequested() {
+        return requested;
+    }
+
+    public void setRequested(SimpleUserDTO requested) {
+        this.requested = requested;
     }
 }
