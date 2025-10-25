@@ -21,4 +21,9 @@ public class CustomExceptions {
             super(message);
         }
     }
+    public static class ServiceException extends RuntimeException {
+        public  ServiceException(String message) {
+            super(message);
+        }
+    }
 }
