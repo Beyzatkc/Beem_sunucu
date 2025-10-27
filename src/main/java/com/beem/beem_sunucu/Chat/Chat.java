@@ -37,10 +37,22 @@ public class Chat {
     @Column(name = "max_participants")
     private Integer maxParticipants;
 
+    @Column(name = "participants_size")
+    private Integer participantsSize;
 
+    @Version
+    private Long version;
+
+    public Integer getParticipantsSize() {
+        return participantsSize;
+    }
+
+    public void setParticipantsSize(Integer participantsSize) {
+        this.participantsSize = participantsSize;
+    }
 
     @PrePersist
-    protected void onCreat(){
+    protected void onCreate(){
         this.createdAt = LocalDateTime.now();
     }
 

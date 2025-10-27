@@ -30,7 +30,7 @@ public class FollowSendRequest {
     private FollowRequestStatus status;
 
     @PrePersist
-    protected void onCreat(){
+    protected void onCreate(){
         this.date = LocalDateTime.now();
         this.status = FollowRequestStatus.PENDING;
     }

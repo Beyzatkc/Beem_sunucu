@@ -38,8 +38,31 @@ public class ChatParticipant {
     @Column(name = "notifications_enabled")
     private Boolean notificationsEnabled = true;
 
+    @ManyToOne
+    @JoinColumn(name = "removed_by")
+    private User removedBy;
+
+    @Column(name = "removed_at")
+    private LocalDateTime removedTime;
+
+    public LocalDateTime getRemovedTime() {
+        return removedTime;
+    }
+
+    public void setRemovedTime(LocalDateTime removedTime) {
+        this.removedTime = removedTime;
+    }
+
+    public User getRemovedBy() {
+        return removedBy;
+    }
+
+    public void setRemovedBy(User removedBy) {
+        this.removedBy = removedBy;
+    }
+
     @PrePersist
-    protected void onCreat(){
+    protected void onCreate(){
         this.joinedAt = LocalDateTime.now();
     }
 

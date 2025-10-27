@@ -24,7 +24,7 @@ public class Follow {
 
 
     @PrePersist
-    protected void onCreat(){
+    protected void onCreate(){
         this.date = LocalDateTime.now();
     }
 
