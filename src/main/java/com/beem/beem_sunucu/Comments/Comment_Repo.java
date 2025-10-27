@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface Comment_Repo extends JpaRepository<Comment,Long> {
-    Page<Comment>findByPost_PostIdOrderByCommentDateDesc(Long postId, Pageable pageable);
+    Page<Comment>findByPost_PostIdAndParentCommentIsNullOrderByCommentDateDesc(Long postId, Pageable pageable);
     Page<Comment>findByParentComment_CommentIdOrderByCommentDateDesc(Long parentCommentId,Pageable pageable);
 
     @Transactional

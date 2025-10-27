@@ -4,6 +4,7 @@ import jakarta.persistence.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,7 +17,10 @@ import java.util.List;
 public class Message {
     @Id
     private Long id;
-    private Long chat_id;
+
+    @Field("chat_id")
+    private Long chatId;
+
     private UserDTOSender userDTOSender;
     private String content;
     private LocalDateTime sentAt;
@@ -38,14 +42,8 @@ public class Message {
         this.id = id;
     }
 
-    public Long getChat_id() {
-        return chat_id;
-    }
-
-    public void setChat_id(Long chat_id) {
-        this.chat_id = chat_id;
-    }
-
+    public Long getChatId() { return chatId; }
+    public void setChatId(Long chatId) { this.chatId = chatId; }
 
     public String getContent() {
         return content;

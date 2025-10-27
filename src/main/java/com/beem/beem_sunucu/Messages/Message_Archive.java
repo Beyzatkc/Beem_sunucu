@@ -10,7 +10,7 @@ import java.util.List;
 public class Message_Archive {
     @Id
     private Long id;
-    private Long chat_id;
+    private Long chatId;
     private UserDTOSender userDTOSender;
     private String content;
     private LocalDateTime sentAt;
@@ -18,7 +18,7 @@ public class Message_Archive {
 
     public Message_Archive(Message message){
         this.id = message.getId();
-        this.chat_id = message.getChat_id();
+        this.chatId = message.getChatId();
         this.userDTOSender = message.getUserDTOSender();
         this.content = message.getContent();
         this.sentAt = message.getSentAt();
@@ -41,12 +41,12 @@ public class Message_Archive {
         this.id = id;
     }
 
-    public Long getChat_id() {
-        return chat_id;
+    public Long getChatId() {
+        return chatId;
     }
 
-    public void setChat_id(Long chat_id) {
-        this.chat_id = chat_id;
+    public void setChatId(Long chatId) {
+        this.chatId = chatId;
     }
 
     public String getContent() {

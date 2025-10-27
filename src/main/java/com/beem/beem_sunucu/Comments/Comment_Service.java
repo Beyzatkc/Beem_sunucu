@@ -36,6 +36,9 @@ public class Comment_Service {
         if (user.isEmpty()) {
             throw new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı.");
         }
+        if(post.isEmpty()){
+            throw new CustomExceptions.AuthenticationException("Post bulunamadı.");
+        }
         Comment comment=new Comment();
         comment.setUser(user.get());
         comment.setContents(commentDtoRequest.getContents());
@@ -50,7 +53,8 @@ public class Comment_Service {
 
     @Transactional
     public List<Comment_DTO_Response>commentsGet(Long postId, int page, int size){
-        Page<Comment>comments=commentRepo.findByPost_PostIdOrderByCommentDateDesc(postId, PageRequest.of(page, size));
+        Page<Comment> comments = commentRepo.findByPost_PostIdAndParentCommentIsNullOrderByCommentDateDesc(postId, PageRequest.of(page, size)
+        );
         return comments.stream().map(comment -> new Comment_DTO_Response(comment)).toList();
     }
 

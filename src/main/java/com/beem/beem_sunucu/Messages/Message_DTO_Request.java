@@ -7,18 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Message_DTO_Request {
-    private Long chat_id;
+    private Long chatId;
     private UserDTOSender userDTOSender;
 
     @NotBlank(message = "Mesaj içeriği boş olamaz")
     private String content;
 
-    public Long getChat_id() {
-        return chat_id;
+    public Long getChatId() {
+        return chatId;
     }
 
-    public void setChat_id(Long chat_id) {
-        this.chat_id = chat_id;
+    public void setChatId(Long chat_id) {
+        this.chatId = chat_id;
     }
 
     public UserDTOSender getUserDTOSender() {

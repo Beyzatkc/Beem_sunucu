@@ -39,13 +39,13 @@ public class Message_Service {
 
     public Message_DTO_Response sendMessage(Message_DTO_Request messageDtoRequest){
         Message message=new Message();
-        message.setChat_id(messageDtoRequest.getChat_id());
+        message.setChatId(messageDtoRequest.getChatId());
         message.setContent(messageDtoRequest.getContent());
         message.setUserDTOSender(messageDtoRequest.getUserDTOSender());
 
         Message savedMessage=messageRepo.save(message);
 
-        String redisKey=REDIS_KEY_PREFIX + messageDtoRequest.getChat_id()+ ":messages";
+        String redisKey=REDIS_KEY_PREFIX + messageDtoRequest.getChatId()+ ":messages";
         List<Message_DTO_Response>cached=redisTemplate.opsForValue().get(redisKey);
 
         Message_DTO_Response messageDtoResponse=new Message_DTO_Response(savedMessage);
@@ -112,7 +112,7 @@ public class Message_Service {
             Query query = new Query(Criteria.where("_id").is(messageId));
             Update update = new Update().addToSet("readBy", name);
             mongoTemplate.updateFirst(query, update, Message.class);
-            String redisKey=REDIS_KEY_PREFIX + message.getChat_id() + ":messages";
+            String redisKey=REDIS_KEY_PREFIX + message.getChatId() + ":messages";
             List<Message_DTO_Response> cached = redisTemplate.opsForValue().get(redisKey);
 
             if (cached != null) {
