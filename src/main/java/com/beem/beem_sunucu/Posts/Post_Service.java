@@ -37,6 +37,8 @@ public class Post_Service {
         }
         Post post=new Post();
         post.setUser(user.get());
+        post.setCoverImage(postDto.getCoverImage());
+        post.setCategories(postDto.getCategories());
         post.setPostName(postDto.getPostName());
         post.setContents(postDto.getContents());
         post.setNumberofLikes(0);
@@ -127,6 +129,8 @@ public class Post_Service {
 
         post.setPostName(postDtoUpdate.getPostName());
         post.setContents(postDtoUpdate.getContents());
+        post.setCategories(postDtoUpdate.getCategories());
+        post.setCoverImage(postDtoUpdate.getCoverImage());
         post.setPostDate(LocalDateTime.now());
         postRepo.save(post);
     }

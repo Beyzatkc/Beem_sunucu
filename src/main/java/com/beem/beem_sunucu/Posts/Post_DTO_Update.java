@@ -9,6 +9,11 @@ public class Post_DTO_Update {
     @NotBlank(message = "Gönderi içeriği boş olamaz")
     private String contents;
 
+    @NotBlank(message = "Gönderi kategorisi boş olamaz")
+    private String categories;
+
+    private String coverImage;
+
     public String getContents() {
         return contents;
     }
@@ -25,4 +30,19 @@ public class Post_DTO_Update {
         this.postName = postName;
     }
 
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public String getCategories() {
+        return categories;
+    }
+
+    public void setCategories(String categories) {
+        this.categories = categories;
+    }
 }

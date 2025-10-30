@@ -11,6 +11,7 @@ public class Message_DTO_Response {
     private String content;
     private LocalDateTime sentAt;
     private List<String> readBy = new ArrayList<>();
+    private List<Long>messagesDeleteUser = new ArrayList<>();
 
     public Message_DTO_Response(Message message){
         this.id=message.getId();
@@ -19,6 +20,7 @@ public class Message_DTO_Response {
         this.content=message.getContent();
         this.sentAt=message.getSentAt();
         this.readBy=message.getReadBy();
+        this.messagesDeleteUser=message.getMessagesDeleteUser();
     }
     public Message_DTO_Response(Message_Archive message){
         this.id=message.getId();
@@ -27,6 +29,7 @@ public class Message_DTO_Response {
         this.content=message.getContent();
         this.sentAt=message.getSentAt();
         this.readBy=message.getReadBy();
+        this.messagesDeleteUser=message.getMessagesDeleteUser();
     }
     public Long getId() {
         return id;
@@ -74,5 +77,13 @@ public class Message_DTO_Response {
 
     public void setReadBy(List<String> readBy) {
         this.readBy = readBy;
+    }
+
+    public List<Long> getMessagesDeleteUser() {
+        return messagesDeleteUser;
+    }
+
+    public void setMessagesDeleteUser(List<Long> messagesDeleteUser) {
+        this.messagesDeleteUser = messagesDeleteUser;
     }
 }

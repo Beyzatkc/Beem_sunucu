@@ -44,8 +44,6 @@ public class Comment {
     private List<Comment_Like> likes;
 
 
-    //begenicascadesi de eklenecek
-
 
     public Long getCommentId() {
         return commentId;

@@ -15,6 +15,11 @@ public class Post_DTO_Request {
     @NotBlank(message = "Gönderi içeriği boş olamaz")
     private String contents;
 
+    @NotBlank(message = "Gönderi kategorisi boş olamaz")
+    private String categories;
+
+    private String coverImage;
+
 
     public Long getPost_id() {
         return post_id;
@@ -48,4 +53,19 @@ public class Post_DTO_Request {
         this.contents = contents;
     }
 
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public String getCategories() {
+        return categories;
+    }
+
+    public void setCategories(String categories) {
+        this.categories = categories;
+    }
 }

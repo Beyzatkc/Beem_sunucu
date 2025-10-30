@@ -21,17 +21,20 @@ public class Message_Controller {
 
     @GetMapping("/getMessages")
     public List<Message_DTO_Response> getMessages(
-            @RequestParam Long chatId
+            @RequestParam Long chatId,
+            @RequestParam Long currentUserId
     ){
-        return messageService.getMessages(chatId);
+        return messageService.getMessages(chatId,currentUserId);
     }
     @GetMapping("/getOldMessages")
     public List<Message_DTO_Response> getOldMessages(
             @PathVariable Long chatId,
             @RequestParam("lastMessageTime") LocalDateTime lastMessageTime,
-            @RequestParam(defaultValue = "20") int limit
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam Long currentUserId
+
     ){
-        return messageService.getOlderMessages(chatId,lastMessageTime,limit);
+        return messageService.getOlderMessages(chatId,lastMessageTime,limit,currentUserId);
     }
 
     @PostMapping("/{messageId}/markAsRead")

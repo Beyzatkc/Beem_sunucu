@@ -4,6 +4,7 @@ import jakarta.persistence.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Document("messages_archive")
@@ -15,6 +16,7 @@ public class Message_Archive {
     private String content;
     private LocalDateTime sentAt;
     private List<String> readBy;
+    private List<Long>messagesDeleteUser;
 
     public Message_Archive(Message message){
         this.id = message.getId();
@@ -23,6 +25,7 @@ public class Message_Archive {
         this.content = message.getContent();
         this.sentAt = message.getSentAt();
         this.readBy = message.getReadBy();
+        this.messagesDeleteUser=message.getMessagesDeleteUser();
     }
 
     public UserDTOSender getUserDTOSender() {
@@ -71,5 +74,13 @@ public class Message_Archive {
 
     public void setReadBy(List<String> readBy) {
         this.readBy = readBy;
+    }
+
+    public List<Long> getMessagesDeleteUser() {
+        return messagesDeleteUser;
+    }
+
+    public void setMessagesDeleteUser(List<Long> messagesDeleteUser) {
+        this.messagesDeleteUser = messagesDeleteUser;
     }
 }

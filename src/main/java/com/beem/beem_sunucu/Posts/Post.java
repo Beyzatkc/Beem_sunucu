@@ -24,6 +24,12 @@ public class Post {
     @Column(nullable = false)
     private String contents;
 
+    @Column(nullable = true)
+    private String coverImage;
+
+    @Column(nullable = false)
+    private String categories;
+
     @Column(name = "number_of_likes")
     private int numberofLikes = 0;
 
@@ -82,5 +88,21 @@ public class Post {
 
     public void setPostDate(LocalDateTime postDate) {
         this.postDate = postDate;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public String getCategories() {
+        return categories;
+    }
+
+    public void setCategories(String categories) {
+        this.categories = categories;
     }
 }

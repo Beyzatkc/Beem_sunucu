@@ -1,6 +1,8 @@
 package com.beem.beem_sunucu.Messages;
 
 import com.beem.beem_sunucu.Users.CustomExceptions;
+import com.beem.beem_sunucu.Users.User;
+import com.beem.beem_sunucu.Users.User_Repo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +22,7 @@ import java.util.List;
 @Service
 public class Message_Service {
     private final Message_Repo messageRepo;
+    private final User_Repo userRepo;
     private final RedisTemplate<String, List<Message_DTO_Response>>redisTemplate;
     private final  KafkaTemplate<String, Message_DTO_Response> kafkaTemplate;
     private final MongoTemplate mongoTemplate;
@@ -27,10 +30,12 @@ public class Message_Service {
 
     private final String MESSAGE_TOPIC = "message-topic";
     private final String MESSAGE_READ_TOPIC ="message-read-topic";
+    private final String MESSAGE_DELETE_TOPIC="message-delete-topic";
     private final String REDIS_KEY_PREFIX = "chat:";
 
-    public Message_Service(Message_Repo messageRepo, RedisTemplate<String, List<Message_DTO_Response>> redisTemplate, KafkaTemplate<String, Message_DTO_Response> kafkaTemplate, MongoTemplate mongoTemplate, Message_Archive_Repo messageArchiveRepo) {
+    public Message_Service(Message_Repo messageRepo, User_Repo userRepo, RedisTemplate<String, List<Message_DTO_Response>> redisTemplate, KafkaTemplate<String, Message_DTO_Response> kafkaTemplate, MongoTemplate mongoTemplate, Message_Archive_Repo messageArchiveRepo) {
         this.messageRepo = messageRepo;
+        this.userRepo = userRepo;
         this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
         this.mongoTemplate = mongoTemplate;
@@ -65,7 +70,7 @@ public class Message_Service {
         return messageDtoResponse;
     }
 
-    public List<Message_DTO_Response>getMessages(Long chatId){
+    public List<Message_DTO_Response>getMessages(Long chatId,Long currentUserId ){
         String redisKey=REDIS_KEY_PREFIX + chatId + ":messages";
         List<Message_DTO_Response>cached=redisTemplate.opsForValue().get(redisKey);
         if(cached!=null){
@@ -75,9 +80,12 @@ public class Message_Service {
         if (messages.isEmpty()) {
             throw new CustomExceptions.NotFoundException("Bu sohbet için mesaj bulunamadı.");
         }
-        List<Message_DTO_Response> dtos= messages.stream().map(message -> new Message_DTO_Response(message)).toList();
-        redisTemplate.opsForValue().set(redisKey, dtos);
-        return dtos;
+        List<Message_DTO_Response> messages2 = messages.stream()
+                .filter(m -> !m.getMessagesDeleteUser().contains(currentUserId))
+                .map(Message_DTO_Response::new)
+                .toList();
+        redisTemplate.opsForValue().set(redisKey, messages2);
+        return messages2;
     }
 
     @Scheduled(cron = "0 0 3 ? * 7")
@@ -90,14 +98,14 @@ public class Message_Service {
             messageRepo.deleteAll(oldMessages);
         }
    }
-    public List<Message_DTO_Response> getOlderMessages(Long chatId, LocalDateTime lastMessageTime, int limit){
+    public List<Message_DTO_Response> getOlderMessages(Long chatId, LocalDateTime lastMessageTime, int limit,Long currentId){
         Pageable pageable = PageRequest.of(0, limit);
 
-        Page<Message> olderMessages = messageRepo.findByChatIdAndSentAtBeforeOrderBySentAtDesc(chatId, lastMessageTime, pageable);
+        Page<Message> olderMessages = messageRepo.findByChatIdAndSentAtBeforeAndNotMessagesDeleteUserOrderBySentAtDesc(chatId, lastMessageTime,currentId, pageable);
         if (!olderMessages.isEmpty()) {
             return olderMessages.stream().map(Message_DTO_Response::new).toList();
         }
-        Page<Message_Archive> olderArchive = messageArchiveRepo.findByChatIdAndSentAtBeforeOrderBySentAtDesc(chatId, lastMessageTime, pageable);
+        Page<Message_Archive> olderArchive = messageArchiveRepo.findByChatIdAndSentAtBeforeAndNotMessagesDeleteUserOrderBySentAtDesc(chatId, lastMessageTime,currentId, pageable);
         if (olderArchive.isEmpty()) {
             throw new CustomExceptions.NotFoundException("Daha eski mesaj bulunamadı.");
         }
@@ -128,5 +136,45 @@ public class Message_Service {
             Message_DTO_Response dtos = new Message_DTO_Response(message);
             kafkaTemplate.send(MESSAGE_READ_TOPIC,dtos);
         }
+    }
+    public void deleteFromEveryone(Long messageId,Long currentUserId){
+        Message message=messageRepo.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Mesaj bulunamadı"));
+
+        Message_Archive oldMessage=messageArchiveRepo.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Mesaj bulunamadı"));
+
+        User user=userRepo.findById(currentUserId)
+                .orElseThrow(() -> new RuntimeException("Kisi bulunamadı"));
+        if(message!=null) {
+            if (!message.getUserDTOSender().getUserId().equals(user.getId())) {
+                throw new RuntimeException("Sadece mesajı gönderen herkesten silebilir.");
+            }
+
+            String redisKey = REDIS_KEY_PREFIX + message.getChatId() + ":messages";
+            List<Message_DTO_Response> messages = redisTemplate.opsForValue().get(redisKey);
+            if (messages != null) {
+                messages.removeIf(m -> m.getId().equals(messageId));
+                redisTemplate.opsForValue().set(redisKey, messages);
+            }
+            Message_DTO_Response dtos = new Message_DTO_Response(message);
+            kafkaTemplate.send(MESSAGE_DELETE_TOPIC, dtos);
+            messageRepo.delete(message);
+        }else if(oldMessage!=null){
+            if (!oldMessage.getUserDTOSender().getUserId().equals(user.getId())) {
+                throw new RuntimeException("Sadece mesajı gönderen herkesten silebilir.");
+            }
+            messageArchiveRepo.delete(oldMessage);
+        }
+    }
+    public void deleteFromMe(Long messageId,Long currentUserId){
+        Message message=messageRepo.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Mesaj bulunamadı"));
+        Message_Archive oldMessage=messageArchiveRepo.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("Mesaj bulunamadı"));
+
+        Query query = new Query(Criteria.where("_id").is(messageId));
+        Update update = new Update().addToSet("messagesDeleteUser", currentUserId); // addToSet: tekrar eklemez
+        mongoTemplate.updateFirst(query, update, Message.class);
     }
 }

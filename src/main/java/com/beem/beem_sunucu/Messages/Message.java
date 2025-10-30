@@ -24,7 +24,8 @@ public class Message {
     private UserDTOSender userDTOSender;
     private String content;
     private LocalDateTime sentAt;
-    private List<String> readBy = new ArrayList<>();
+    private List<String>readBy = new ArrayList<>();
+    private List<Long>messagesDeleteUser = new ArrayList<>();
 
     public UserDTOSender getUserDTOSender() {
         return userDTOSender;
@@ -67,5 +68,13 @@ public class Message {
 
     public void setReadBy(List<String> readBy) {
         this.readBy = readBy;
+    }
+
+    public List<Long> getMessagesDeleteUser() {
+        return messagesDeleteUser;
+    }
+
+    public void setMessagesDeleteUser(List<Long> messagesDeleteUser) {
+        this.messagesDeleteUser = messagesDeleteUser;
     }
 }

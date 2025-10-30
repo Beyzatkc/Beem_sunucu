@@ -18,6 +18,10 @@ public class Post_DTO_Response {
 
     private LocalDateTime postDate;
 
+    private String coverImage;
+
+    private String categories;
+
     public User_Response_DTO getUser() {
         return user;
     }
@@ -67,6 +71,21 @@ public class Post_DTO_Response {
         this.postDate = postDate;
     }
 
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public String getCategories() {
+        return categories;
+    }
+
+    public void setCategories(String categories) {
+        this.categories = categories;
+    }
 
     public Post_DTO_Response(Post post) {
         this.post_id = post.getPostId();
@@ -75,5 +94,7 @@ public class Post_DTO_Response {
         this.contents = post.getContents();
         this.numberof_likes = post.getNumberofLikes();
         this.postDate = post.getPostDate();
+        this.coverImage=post.getCoverImage();
+        this.categories=post.getCategories();
     }
 }
