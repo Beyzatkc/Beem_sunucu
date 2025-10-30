@@ -17,6 +17,13 @@ public class ParticipantDTO {
         this.muted = muted;
     }
 
+    public ParticipantDTO(ChatParticipant cp){
+        this.userId = cp.getUser().getId();
+        this.username = cp.getUser().getUsername();
+        this.role = cp.getRole();
+        this.muted = cp.isMuted();
+    }
+
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
 

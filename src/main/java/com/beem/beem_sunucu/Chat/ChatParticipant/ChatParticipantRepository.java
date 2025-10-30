@@ -19,6 +19,8 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
 
     List<ChatParticipant> findByUser(User user);
 
+    List<ChatParticipant> findByUserAndChatDeleted(User user, Boolean chatDeleted);
+
     boolean existsByChatAndUser(Chat chat, User user);
 
     Optional<ChatParticipant> findByChatAndUser(Chat chat, User user);
@@ -31,10 +33,16 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
 
     List<ChatParticipant> findByChatAndRole(Chat chat, ChatRole role);
 
+    int countByChatAndRole(Chat chat, ChatRole role);
+
     @Modifying
     @Transactional
-    @Query(
-            "UPDATE chat_participants cp set cp.role = :role where cp.chat_id = :chatId and cp.user_id = :userId"
-    )
+    @Query("""
+        UPDATE ChatParticipant cp
+        SET cp.role = :role
+        WHERE cp.chat.id = :chatId
+          AND cp.user.id = :userId
+          AND cp.role <> com.beem.beem_sunucu.Chat.ChatParticipant.ChatRole.KICKED
+    """)
     int updateUserRole(@Param("chatId") Long chatId, @Param("userId") Long userId, @Param("role") ChatRole role);
 }

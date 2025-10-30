@@ -45,6 +45,9 @@ public class ChatParticipant {
     @Column(name = "removed_at")
     private LocalDateTime removedTime;
 
+    @Column(name = "chat_deleted")
+    private Boolean chatDeleted = false;
+
     public LocalDateTime getRemovedTime() {
         return removedTime;
     }
@@ -62,9 +65,19 @@ public class ChatParticipant {
     }
 
     @PrePersist
-    protected void onCreate(){
-        this.joinedAt = LocalDateTime.now();
+    protected void onCreate() {
+        if (this.joinedAt == null) {
+            this.joinedAt = LocalDateTime.now();
+        }
     }
+
+    @PreUpdate
+    protected void onUpdate() {
+        if (this.joinedAt == null) {
+            this.joinedAt = LocalDateTime.now();
+        }
+    }
+
 
     public ChatParticipant() {}
 
@@ -74,6 +87,13 @@ public class ChatParticipant {
         this.role = role;
     }
 
+    public Boolean getChatDeleted() {
+        return chatDeleted;
+    }
+
+    public void setChatDeleted(Boolean chatDeleted) {
+        this.chatDeleted = chatDeleted;
+    }
 
     public Chat getChat() {
         return chat;

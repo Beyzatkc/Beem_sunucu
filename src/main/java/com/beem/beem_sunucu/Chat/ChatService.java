@@ -4,10 +4,7 @@ import com.beem.beem_sunucu.Chat.ChatParticipant.ChatParticipant;
 import com.beem.beem_sunucu.Chat.ChatParticipant.ChatParticipantRepository;
 import com.beem.beem_sunucu.Chat.ChatParticipant.ChatRole;
 import com.beem.beem_sunucu.Chat.ChatParticipant.ParticipantDTO;
-import com.beem.beem_sunucu.Chat.RequestDTO.AddUserGroupRequest;
-import com.beem.beem_sunucu.Chat.RequestDTO.CreateDirectChatRequest;
-import com.beem.beem_sunucu.Chat.RequestDTO.CreateGroupChatRequest;
-import com.beem.beem_sunucu.Chat.RequestDTO.RemoveUserGroupRequest;
+import com.beem.beem_sunucu.Chat.RequestDTO.*;
 import com.beem.beem_sunucu.Chat.ResponseDTO.AddUserGroupResponse;
 import com.beem.beem_sunucu.Chat.ResponseDTO.DirectChatResponse;
 import com.beem.beem_sunucu.Chat.ResponseDTO.GroupChatResponse;
@@ -20,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -182,18 +180,25 @@ public class ChatService {
         }
 
         List<User> users = userRepo.findAllByIdIn(dto.getParticipantIds());
-        Set<Long> chatPIds = participantRepo.findAllByChatAndUserIn(chat, users).stream()
-                .map(p -> p.getUser().getId())
-                .collect(Collectors.toSet());
+        HashMap<Long, ChatParticipant> mapUsers = new HashMap<>();
+
+        List<ChatParticipant> chatP = participantRepo.findAllByChatAndUserIn(chat, users);
+
+        for(ChatParticipant cp: chatP){
+            mapUsers.put(cp.getUser().getId(), cp);
+        }
 
         List<User> newUsers = users.stream()
-                .filter(u -> !chatPIds.contains(u.getId())).toList();
+                .filter(user-> !mapUsers.containsKey(user.getId())
+                        || mapUsers.get(user.getId()).getRole() == ChatRole.KICKED
+                ).toList();
 
 
         if(chat.getMaxParticipants() != null && newUsers.size()+ chat.getParticipantsSize() > chat.getMaxParticipants()){
             throw new IllegalArgumentException("Number of participants exceeds max allowed");
         }
         chat.setParticipantsSize(chat.getParticipantsSize() + newUsers.size());
+        chatRepo.save(chat);
 
         List<ChatParticipant> participants = newUsers.stream()
                 .map(user ->{
@@ -208,7 +213,6 @@ public class ChatService {
         participantRepo.saveAll(participants);
         participantRepo.flush();
 
-        chatRepo.save(chat);
 
         return new AddUserGroupResponse(
                 chat.getChatId(),
@@ -270,7 +274,131 @@ public class ChatService {
     }
 
     @Transactional
-    public void roleUpdate(){
+    public String roleUpdate(RoleUpdateRequest dto){
+        User me = userRepo.findById(dto.getMyId())
+                .orElseThrow(() -> new IllegalArgumentException("User (myId) not found"));
+        Chat chat = chatRepo.findById(dto.getChatId())
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+        ChatParticipant myCp = participantRepo.findByChatAndUser(chat, me)
+                .orElseThrow(() -> new IllegalArgumentException("You are not a participant of this chat"));
 
+        if(myCp.getRole() != ChatRole.ADMIN){
+            throw new SecurityException("You don't have permission to update user roles in this chat");
+        }
+
+        int result = participantRepo.updateUserRole(dto.getChatId(), dto.getUserId(), dto.getRole());
+
+        if (result == 0) {
+            throw new IllegalArgumentException("User not found in this chat or role unchanged");
+        }
+
+        return "User role updated successfully";
+    }
+
+    @Transactional
+    public void exitGroup(Long exitId, Long chatId){
+        User me = userRepo.findById(exitId)
+                .orElseThrow(() -> new IllegalArgumentException("User (myId) not found"));
+        Chat chat = chatRepo.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+        if(chat.getChatType() != ChatType.GROUP){
+            throw new IllegalArgumentException("This chat not group chat!");
+        }
+
+        ChatParticipant myP = participantRepo.findByChatAndUser(chat, me)
+                .orElseThrow(() -> new IllegalArgumentException("You are not a participant of this chat"));
+
+        if(myP.getRole() == ChatRole.KICKED){
+            throw new IllegalArgumentException("You are exiting this group");
+        }
+
+        if(myP.getRole() == ChatRole.ADMIN && participantRepo.countByChatAndRole(chat, ChatRole.ADMIN) == 1){
+            throw new IllegalArgumentException("This group have a one admin. You choose the select admin.");
+        }
+
+        myP.setRemovedBy(me);
+        myP.setMuted(true);
+        myP.setRole(ChatRole.KICKED);
+        myP.setRemovedTime(LocalDateTime.now());
+        chat.setParticipantsSize(
+                chat.getParticipantsSize() - 1
+        );
+
+        participantRepo.save(myP);
+
+        chatRepo.save(chat);
+    }
+
+    @Transactional
+    public List<Object> allMyChat(Long myId){
+
+        List<Object> allChat = new ArrayList<>();
+
+        User me = userRepo.findById(myId)
+                .orElseThrow(() -> new IllegalArgumentException("User (myId) not found"));
+
+        List<ChatParticipant> myP = participantRepo.findByUserAndChatDeleted(me, Boolean.FALSE);
+
+        for (ChatParticipant cp: myP){
+            if(cp.getChat().getChatType() == ChatType.GROUP){
+                GroupChatResponse groupC = new GroupChatResponse(
+                        cp.getChat().getChatId(),
+                        cp.getChat().getChatType(),
+                        cp.getChat().getTitle(),
+                        cp.getChat().getDescription(),
+                        cp.getChat().getAvatarUrl(),
+                        cp.getChat().getMaxParticipants(),
+                        cp.getChat().getCreatedBy().getId(),
+                        participantRepo.findByChat(cp.getChat()).stream()
+                                .map(ParticipantDTO::new).toList(),
+                        cp.getChat().getCreatedAt()
+                );
+                allChat.add(groupC);
+            }
+            else{
+                String title;
+                String chatProfile;
+                List<ChatParticipant> participants = participantRepo.findByChat(cp.getChat());
+                if(!participants.get(0).getUser().getId().equals(me.getId())){
+                    title = participants.get(0).getUser().getUsername();
+                    chatProfile = participants.get(0).getUser().getProfile();
+                }
+                else {
+                    title = participants.get(1).getUser().getUsername();
+                    chatProfile = participants.get(1).getUser().getProfile();
+                }
+
+                DirectChatResponse directC = new DirectChatResponse(
+                        cp.getChat().getChatId(),
+                        cp.getChat().getChatType(),
+                        title,
+                        cp.getChat().getDescription(),
+                        cp.getChat().getCreatedAt(),
+                        participants.stream()
+                                .map(ParticipantDTO::new).toList()
+                );
+                directC.setChatProfile(chatProfile);
+                allChat.add(directC);
+            }
+        }
+        return allChat;
+    }
+
+    @Transactional
+    public void deleteChat(Long myId, Long chatId){
+        User me = userRepo.findById(myId)
+                .orElseThrow(() -> new IllegalArgumentException("User (myId) not found"));
+        Chat chat = chatRepo.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+        ChatParticipant myP = participantRepo.findByChatAndUser(chat, me)
+                .orElseThrow(() -> new IllegalArgumentException("You are not a participant of this chat"));
+
+        if(myP.getChatDeleted()){
+            throw new IllegalArgumentException("This chat has already been deleted");
+        }
+
+        myP.setChatDeleted(Boolean.TRUE);
+        myP.setJoinedAt(LocalDateTime.now());
+        participantRepo.save(myP);
     }
 }

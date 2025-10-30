@@ -11,6 +11,7 @@ public class DirectChatResponse {
     private ChatType chatType;
     private String title;
     private String description;
+    private String chatProfile;
     private LocalDateTime createdAt;
 
     private List<ParticipantDTO> participants;
@@ -26,6 +27,14 @@ public class DirectChatResponse {
         this.description = description;
         this.createdAt = createdAt;
         this.participants = participants;
+    }
+
+    public String getChatProfile() {
+        return chatProfile;
+    }
+
+    public void setChatProfile(String chatProfile) {
+        this.chatProfile = chatProfile;
     }
 
     public Long getChatId() { return chatId; }
