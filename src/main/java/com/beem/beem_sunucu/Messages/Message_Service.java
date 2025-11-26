@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Update;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -101,11 +102,11 @@ public class Message_Service {
     public List<Message_DTO_Response> getOlderMessages(Long chatId, LocalDateTime lastMessageTime, int limit,Long currentId){
         Pageable pageable = PageRequest.of(0, limit);
 
-        Page<Message> olderMessages = messageRepo.findByChatIdAndSentAtBeforeAndNotMessagesDeleteUserOrderBySentAtDesc(chatId, lastMessageTime,currentId, pageable);
+        Page<Message> olderMessages = messageRepo.findMessages(chatId, lastMessageTime, Collections.singletonList(currentId), pageable);
         if (!olderMessages.isEmpty()) {
             return olderMessages.stream().map(Message_DTO_Response::new).toList();
         }
-        Page<Message_Archive> olderArchive = messageArchiveRepo.findByChatIdAndSentAtBeforeAndNotMessagesDeleteUserOrderBySentAtDesc(chatId, lastMessageTime,currentId, pageable);
+        Page<Message_Archive> olderArchive = messageArchiveRepo.findMessages(chatId, lastMessageTime,Collections.singletonList(currentId), pageable);
         if (olderArchive.isEmpty()) {
             throw new CustomExceptions.NotFoundException("Daha eski mesaj bulunamadı.");
         }

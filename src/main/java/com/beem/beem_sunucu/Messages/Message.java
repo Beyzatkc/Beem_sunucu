@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Document("Messages")
 @CompoundIndexes({
         @CompoundIndex(name = "chat_sentAt_idx", def = "{'chatId': 1, 'sentAt': -1}")

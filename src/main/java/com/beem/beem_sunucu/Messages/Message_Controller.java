@@ -1,6 +1,7 @@
 package com.beem.beem_sunucu.Messages;
 
 import jakarta.validation.Valid;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -37,14 +38,6 @@ public class Message_Controller {
         return messageService.getOlderMessages(chatId,lastMessageTime,limit,currentUserId);
     }
 
-    @PostMapping("/{messageId}/markAsRead")
-    public String markAsRead(
-            @PathVariable Long messageId,
-            @RequestParam String username
-    ) {
-        messageService.markAsRead(messageId, username);
-        return "Mesaj okunmuş olarak işaretlendi.";
-    }
 }
 
 

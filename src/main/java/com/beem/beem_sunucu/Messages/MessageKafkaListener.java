@@ -29,6 +29,7 @@ public class MessageKafkaListener {
     }
 
 
+
     //BİLDİRİM EKLENECEK
 
 }

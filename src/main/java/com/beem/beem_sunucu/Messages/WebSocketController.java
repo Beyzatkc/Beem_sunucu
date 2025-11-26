@@ -18,12 +18,14 @@ public class WebSocketController {
     }
 
     @MessageMapping("chat.readMessage") // /app/chat.readMessage
-    public void markMessageAsRead(Message_DTO_Response request) {
-        messageService.markAsRead(request.getId(), request.getUserDTOSender().getUsername());
+    public void markMessageAsRead(Message_read_DTO_request request) {
+        messageService.markAsRead(request.getMessageId(), request.getUsername());
     }
-
-    @MessageMapping("chat.deleteMessage") // /app/chat.readMessage
-    public void deleteMessageEveryone(Long messageId,Long currentUserId) {
-        messageService.deleteFromEveryone(messageId,currentUserId);
+    @MessageMapping("chat.deleteMessage") // /app/chat.deleteMessage
+        public void deleteMessageEveryone(Delete_Message_DTO_Request req) {
+        messageService.deleteFromEveryone(
+                req.getMessageId(),
+                req.getUserId()
+        );
     }
 }
