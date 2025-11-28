@@ -1,6 +1,5 @@
 package com.beem.beem_sunucu.Chat.ChatParticipant;
 
-import com.beem.beem_sunucu.Chat.ChatParticipant.ChatRole;
 
 public class ParticipantDTO {
     private Long userId;

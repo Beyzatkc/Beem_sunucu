@@ -12,6 +12,7 @@ import com.beem.beem_sunucu.Chat.ResponseDTO.RemoveUserGroupResponse;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyAutoConfiguration;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -208,6 +209,7 @@ public class ChatService {
                             ChatRole.GUEST
                     );
                     p.setAddedBy(me);
+                    p.setMuted(false);
                     return p;
                 }).toList();
         participantRepo.saveAll(participants);
@@ -245,6 +247,13 @@ public class ChatService {
             throw new SecurityException("You don't have permission to add users to this chat");
         }
 
+        String message = "Users removed successfully";
+
+        if(dto.getParticipantIds().contains(myP.getUser().getId())){
+            dto.getParticipantIds().remove(myP.getUser().getId());
+            message = "Users except admin removed successfully";
+        }
+
         List<ChatParticipant> chatPList = participantRepo.findAllByChatAndUserIdIn(chat, dto.getParticipantIds());
 
         chat.setParticipantsSize(
@@ -269,7 +278,7 @@ public class ChatService {
                 me.getId(),
                 chatPList.stream().map(p->p.getUser().getId()).toList(),
                 chat.getParticipantsSize(),
-                "Users removed successfully"
+                message
         );
     }
 
