@@ -1,10 +1,8 @@
 package com.beem.beem_sunucu.Block;
 
-import com.beem.beem_sunucu.Follow.Follow;
 import com.beem.beem_sunucu.Follow.FollowRepository;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestRepositorty;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestStatus;
-import com.beem.beem_sunucu.Follow.FollowRequest.FollowSendRequest;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service

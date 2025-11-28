@@ -3,6 +3,9 @@ package com.beem.beem_sunucu.Follow.FollowRequest;
 
 import com.beem.beem_sunucu.Follow.Follow;
 import com.beem.beem_sunucu.Follow.FollowRepository;
+import com.beem.beem_sunucu.Users.SimpleUserDTO;
+import com.beem.beem_sunucu.Users.User;
+import com.beem.beem_sunucu.Users.User_Repo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,13 +20,17 @@ public class FollowRequestService {
 
     private final FollowRequestRepositorty followRequestRepositorty;
     private final FollowRepository followRepository;
+    private final User_Repo userRepo;
 
 
     @Autowired
     public FollowRequestService(FollowRequestRepositorty followRequestRepositorty,
-                                FollowRepository followRepository){
+                                FollowRepository followRepository,
+                                User_Repo userRepo
+                                ){
         this.followRequestRepositorty = followRequestRepositorty;
         this.followRepository = followRepository;
+        this.userRepo = userRepo;
     }
 
     @Transactional
@@ -36,10 +43,17 @@ public class FollowRequestService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"The request already exists.");
         }
 
-        FollowSendRequest request = new FollowSendRequest(requestDTO);
+        FollowSendRequest request = new FollowSendRequest(
+                findUser(requestDTO.getRequesterId()),
+                findUser(requestDTO.getRequestedId())
+        );
         followRequestRepositorty.save(request);
 
-        return new FollowResponseDTO(request);
+        return new FollowResponseDTO(
+                request,
+                new SimpleUserDTO(request.getRequester()),
+                new SimpleUserDTO(request.getRequested())
+        );
 
     }
 
@@ -58,8 +72,8 @@ public class FollowRequestService {
 
         return new FollowResponseDTO(
                 request.getId(),
-                request.getRequesterId(),
-                request.getRequestedId(),
+                new SimpleUserDTO(request.getRequester()),
+                new SimpleUserDTO(request.getRequested()),
                 request.getStatus(),
                 request.getDate()
         );
@@ -79,8 +93,8 @@ public class FollowRequestService {
 
         return new FollowResponseDTO(
                 request.getId(),
-                request.getRequesterId(),
-                request.getRequestedId(),
+                new SimpleUserDTO(request.getRequester()),
+                new SimpleUserDTO(request.getRequested()),
                 request.getStatus(),
                 request.getDate()
         );
@@ -89,14 +103,27 @@ public class FollowRequestService {
     @Transactional
     public List<FollowResponseDTO> getPendingRequests(Long requestedId){
         return followRequestRepositorty.findByRequestedIdAndStatus(requestedId, FollowRequestStatus.PENDING).stream()
-                .map(request -> new FollowResponseDTO(request)).collect(Collectors.toList());
+                .map(request -> new FollowResponseDTO(
+                        request,
+                        new SimpleUserDTO(request.getRequester()),
+                        new SimpleUserDTO(request.getRequested())
+                )).collect(Collectors.toList());
     }
 
     @Transactional
     public List<FollowResponseDTO> getSentRequests(Long requesterId) {
         return followRequestRepositorty.findByRequesterId(requesterId)
                 .stream()
-                .map(request -> new FollowResponseDTO(request))
+                .map(request -> new FollowResponseDTO(
+                        request,
+                        new SimpleUserDTO(request.getRequester()),
+                        new SimpleUserDTO(request.getRequested())
+                ))
                 .collect(Collectors.toList());
+    }
+
+    private User findUser(Long id){
+        return userRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 }
