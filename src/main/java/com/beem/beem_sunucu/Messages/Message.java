@@ -17,7 +17,7 @@ import java.util.List;
 })
 public class Message {
     @Id
-    private Long id;
+    private String id;
 
     @Field("chat_id")
     private Long chatId;
@@ -36,11 +36,11 @@ public class Message {
         this.userDTOSender = userDTOSender;
     }
 
-    public Long getId() {
+    public String  getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String  id) {
         this.id = id;
     }
 

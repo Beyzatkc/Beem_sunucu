@@ -1,6 +1,7 @@
 package com.beem.beem_sunucu.Messages;
 
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,9 +16,12 @@ public class Message_Controller {
     public Message_Controller(Message_Service messageService) {
         this.messageService = messageService;
     }
-    @PostMapping("/sendMessage")
-    public Message_DTO_Response addMessages(@Valid @RequestBody Message_DTO_Request messageDtoRequest){
-        return messageService.sendMessage(messageDtoRequest);
+
+    @PostMapping("/send")
+    public ResponseEntity<Message_DTO_Response> sendMessage(@RequestBody Message_DTO_Request request) {
+        System.out.println("REST sendMessage tetiklendi: " + request.getContent());
+        Message_DTO_Response response = messageService.sendMessage(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/getMessages")

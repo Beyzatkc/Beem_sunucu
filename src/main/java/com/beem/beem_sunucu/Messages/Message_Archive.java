@@ -10,7 +10,7 @@ import java.util.List;
 @Document("messages_archive")
 public class Message_Archive {
     @Id
-    private Long id;
+    private String id;
     private Long chatId;
     private UserDTOSender userDTOSender;
     private String content;
@@ -36,11 +36,11 @@ public class Message_Archive {
         this.userDTOSender = userDTOSender;
     }
 
-    public Long getId() {
+    public String  getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String  id) {
         this.id = id;
     }
 

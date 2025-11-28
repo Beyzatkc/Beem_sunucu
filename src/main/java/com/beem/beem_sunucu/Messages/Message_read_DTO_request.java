@@ -1,14 +1,14 @@
 package com.beem.beem_sunucu.Messages;
 
 public class Message_read_DTO_request {
-    private Long messageId;
+    private String  messageId;
     private String username;
 
-    public Long getMessageId() {
+    public String  getMessageId() {
         return messageId;
     }
 
-    public void setMessageId(Long messageId) {
+    public void setMessageId(String messageId) {
         this.messageId = messageId;
     }
 

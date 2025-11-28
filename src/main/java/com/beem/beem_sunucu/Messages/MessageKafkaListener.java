@@ -11,10 +11,14 @@ public class MessageKafkaListener {
     public MessageKafkaListener(SimpMessagingTemplate messagingTemplate, User_Repo userRepository) {
         this.messagingTemplate = messagingTemplate;
     }
-    @KafkaListener(topics = "message-topic", groupId = "chat_group")
+    @KafkaListener(topics = "message-topic", groupId = "chat_group", containerFactory = "kafkaListenerContainerFactory")
     public void listenNewMessage(Message_DTO_Response message) {
-        String wsDestination = "/topic/chat-" + message.getChatId();
-        messagingTemplate.convertAndSend(wsDestination, message);
+        try {
+            String wsDestination = "/topic/chat-" + message.getChatId();
+            messagingTemplate.convertAndSend(wsDestination, message);
+        } catch (Exception e) {
+            System.out.println("Hatalı mesaj offset yakalandı: " + message);
+        }
     }
 
     @KafkaListener(topics = "message-read-topic", groupId = "chat_group")

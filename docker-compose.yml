@@ -23,10 +23,11 @@ services:
     build: .
     container_name: spring_app
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+      - mongodb
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/springdb?useSSL=false&serverTimezone=UTC
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/springdb
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -67,8 +68,6 @@ services:
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_OPTS: "-Djava.net.preferIPv4Stack=true"
-
-
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
@@ -90,31 +89,6 @@ services:
     restart: unless-stopped
     networks:
       - app-network
-
-  zookeeper:
-    image: wurstmeister/zookeeper
-    ports:
-      - "2181:2181"
-
-    # Kafka
-  kafka:
-    image: wurstmeister/kafka
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_LISTENERS: "INTERNAL://kafka:29092,EXTERNAL://0.0.0.0:9092"
-      KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka:29092,EXTERNAL://localhost:9092"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-
-    depends_on:
-      - zookeeper
-  mongodb:
-    image: mongo
-    container_name: mongo
-    ports:
-      - "27017:27017"
 
 volumes:
   mysql-data:

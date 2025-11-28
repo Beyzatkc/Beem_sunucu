@@ -1,6 +1,7 @@
 package com.beem.beem_sunucu.Messages;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -14,6 +15,7 @@ public class WebSocketController {
 
     @MessageMapping("chat.sendMessage") // /app/chat.sendMessage adresine gönderilen mesajları yakalar
     public void receiveMessage(Message_DTO_Request request) {
+        System.out.println("receiveMessage tetiklendi: " + request.getContent());
         messageService.sendMessage(request);
     }
 

@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface Message_Repo extends MongoRepository<Message,Long> {
+public interface Message_Repo extends MongoRepository<Message,String> {
     List<Message> findTop100ByChatIdOrderBySentAtDesc(Long chatId);
     List<Message>findBySentAtBefore(LocalDateTime time);
 

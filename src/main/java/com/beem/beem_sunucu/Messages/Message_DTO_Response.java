@@ -1,17 +1,22 @@
 package com.beem.beem_sunucu.Messages;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Message_DTO_Response {
-    private Long id;
+public class Message_DTO_Response implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String  id;
     private Long chatId;
     private UserDTOSender userDTOSender;
     private String content;
     private LocalDateTime sentAt;
     private List<String> readBy = new ArrayList<>();
     private List<Long>messagesDeleteUser = new ArrayList<>();
+
+    public Message_DTO_Response(){
+    }
 
     public Message_DTO_Response(Message message){
         this.id=message.getId();
@@ -31,11 +36,11 @@ public class Message_DTO_Response {
         this.readBy=message.getReadBy();
         this.messagesDeleteUser=message.getMessagesDeleteUser();
     }
-    public Long getId() {
+    public String  getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String  id) {
         this.id = id;
     }
 
