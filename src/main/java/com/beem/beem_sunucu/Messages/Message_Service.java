@@ -5,6 +5,7 @@ import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.result.UpdateResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -88,8 +89,6 @@ public class Message_Service {
 
         return messageDtoResponse;
     }
-
-
     public List<Message_DTO_Response> getMessages(Long chatId, Long currentUserId) {
 
         String redisKey = REDIS_KEY_PREFIX + chatId + ":messages";
@@ -231,11 +230,9 @@ public class Message_Service {
 
         try {
             List<String> cachedList = redisTemplate.opsForList().range(redisKey, 0, -1);
-
-            if (cachedList != null && !cachedList.isEmpty()) {
+            if (cachedList!=null && !cachedList.isEmpty()) {
 
                 for (int i = 0; i < cachedList.size(); i++) {
-
                     String json = cachedList.get(i);
                     Message_DTO_Response dto = objectMapper.readValue(json, Message_DTO_Response.class);
 
@@ -267,14 +264,19 @@ public class Message_Service {
     }
 
     @Transactional
-    public void deleteFromMe(String messageId,Long currentUserId){
-        Message message=messageRepo.findById(messageId)
-                .orElseThrow(() -> new RuntimeException("Mesaj bulunamadı"));
-        Message_Archive oldMessage=messageArchiveRepo.findById(messageId)
-                .orElseThrow(() -> new RuntimeException("Mesaj bulunamadı"));
+    public void deleteFromMe(String messageId, Long currentUserId) {
 
         Query query = new Query(Criteria.where("_id").is(messageId));
-        Update update = new Update().addToSet("messagesDeleteUser", currentUserId); // addToSet: tekrar eklemez
-        mongoTemplate.updateFirst(query, update, Message.class);
+        Update update = new Update().addToSet("messagesDeleteUser", currentUserId);
+        UpdateResult result = mongoTemplate.updateFirst(query, update, Message.class);
+
+        if (result.getMatchedCount() == 0) {
+            throw new RuntimeException("Mesaj bulunamadı: " + messageId);
+        }
+
+        if (result.getModifiedCount() == 0) {
+            System.out.println("Bu mesaj zaten silmiş olarak görünüyor.");
+        }
     }
+
 }

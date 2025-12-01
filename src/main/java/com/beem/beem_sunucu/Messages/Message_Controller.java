@@ -42,6 +42,34 @@ public class Message_Controller {
         return messageService.getOlderMessages(chatId,lastMessageTime,limit,currentUserId);
     }
 
+    @PostMapping("/readMessage")
+    public ResponseEntity<String> markMessageAsRead(@RequestBody Message_read_DTO_request request) {
+        messageService.markAsRead(request.getMessageId(), request.getUsername());
+        return ResponseEntity.ok("Mesaj okundu olarak işaretlendi.");
+    }
+
+    @PostMapping("/deleteMessage")
+    public ResponseEntity<String> deleteMessageEveryone(@RequestBody Delete_Message_DTO_Request req) {
+
+        messageService.deleteFromEveryone(
+                req.getMessageId(),
+                req.getUserId()
+        );
+
+        return ResponseEntity.ok("Mesaj herkesten silindi.");
+    }
+
+    @PostMapping("/deleteFromMe")
+    public ResponseEntity<String> deleteFromMe(@RequestBody Delete_Message_DTO_Request req) {
+
+        messageService.deleteFromMe(
+                req.getMessageId(),
+                req.getUserId()
+        );
+
+        return ResponseEntity.ok("Mesaj sadece sizden silindi.");
+    }
+
 }
 
 
