@@ -288,11 +288,19 @@ public class ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("User (myId) not found"));
         Chat chat = chatRepo.findById(dto.getChatId())
                 .orElseThrow(() -> new IllegalArgumentException("Chat not found"));
+
+        if(chat.getChatType() == ChatType.DIRECT)
+            throw new IllegalArgumentException("This chat direct. There is no role update");
+
         ChatParticipant myCp = participantRepo.findByChatAndUser(chat, me)
                 .orElseThrow(() -> new IllegalArgumentException("You are not a participant of this chat"));
 
         if(myCp.getRole() != ChatRole.ADMIN){
             throw new SecurityException("You don't have permission to update user roles in this chat");
+        }
+
+        if(me.getId().equals(dto.getUserId()) && participantRepo.countByChatAndRole(chat, ChatRole.ADMIN) == 1){
+            throw new IllegalArgumentException("This group have a one admin. You choose the select admin.");
         }
 
         int result = participantRepo.updateUserRole(dto.getChatId(), dto.getUserId(), dto.getRole());
