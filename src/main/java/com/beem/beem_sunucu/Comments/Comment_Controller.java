@@ -5,6 +5,7 @@ import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Posts.Post_DTO_Update;
 import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
+import com.beem.beem_sunucu.Users.User_service;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +18,21 @@ import java.util.List;
 @RequestMapping("/api/comments")
 public class Comment_Controller {
     private final Comment_Service commentService;
+    private final User_service userService;
 
-    public Comment_Controller(Comment_Service commentService) {
+    public Comment_Controller(Comment_Service commentService, User_service userService) {
         this.commentService = commentService;
+        this.userService = userService;
     }
     @PostMapping("/addComment")
     public Comment_DTO_Response addComment(@Valid @RequestBody Comment_DTO_Request commentDtoRequest) {
+        userService.securityUser(commentDtoRequest.getUserId());
         return commentService.commentCreate(commentDtoRequest);
     }
 
     @PostMapping("/addSubComment")
     public Comment_DTO_Response addSubComment(@Valid @RequestBody Comment_DTO_Request commentDtoRequest) {
+        userService.securityUser(commentDtoRequest.getUserId());
         return commentService.createSubComment(commentDtoRequest);
     }
 
@@ -51,9 +56,9 @@ public class Comment_Controller {
 
     @PostMapping("/{commentId}/like")
     public ResponseEntity<String> toggleLike(
-            @PathVariable Long commentId,
-            @RequestParam Long userId
+            @PathVariable Long commentId
     ) {
+        Long userId= userService.getCurrentUserId();
         try {
             String result = commentService.toggleLike(commentId,userId);
             return ResponseEntity.ok(result);
@@ -69,10 +74,10 @@ public class Comment_Controller {
     @GetMapping("/{commentId}/getUsersWhoLike")
     public ResponseEntity<List<User_Response_DTO>> getUsersWhoLike(
             @PathVariable Long commentId,
-            @RequestParam Long currentUserId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        Long currentUserId= userService.getCurrentUserId();
         try {
             List<User_Response_DTO> users = commentService.users_who_like(commentId,currentUserId,page,size);
             if (users.isEmpty()) {
@@ -87,9 +92,9 @@ public class Comment_Controller {
 
     @DeleteMapping("/{commentId}/deleteComment")
     public ResponseEntity<String>DeletePost(
-            @PathVariable Long commentId,
-            @RequestParam Long userId
+            @PathVariable Long commentId
     ){
+        Long userId= userService.getCurrentUserId();
         commentService.removeComment(commentId,userId);
         return ResponseEntity.ok("Post başarıyla silindi.");
     }
@@ -98,9 +103,9 @@ public class Comment_Controller {
     public ResponseEntity<String> UpdatePost(
             @Valid
             @PathVariable Long commentId,
-            @RequestParam Long userId,
             @RequestBody Comment_DTO_Update commentDtoUpdate
     ) {
+        Long userId= userService.getCurrentUserId();
         commentService.updateComment(commentId,userId,commentDtoUpdate);
         return ResponseEntity.ok("Post başarıyla güncellendi.");
     }

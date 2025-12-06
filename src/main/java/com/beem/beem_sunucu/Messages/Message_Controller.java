@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Messages;
 
+import com.beem.beem_sunucu.Users.User_service;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,13 +13,16 @@ import java.util.List;
 @RequestMapping("/api/messages")
 public class Message_Controller {
     private final Message_Service messageService;
+    private final User_service userService;
 
-    public Message_Controller(Message_Service messageService) {
+    public Message_Controller(Message_Service messageService, User_service userService) {
         this.messageService = messageService;
+        this.userService = userService;
     }
 
     @PostMapping("/send")
     public ResponseEntity<Message_DTO_Response> sendMessage(@RequestBody Message_DTO_Request request) {
+        userService.securityUser(request.getUserDTOSender().getUserId());
         System.out.println("REST sendMessage tetiklendi: " + request.getContent());
         Message_DTO_Response response = messageService.sendMessage(request);
         return ResponseEntity.ok(response);
@@ -26,31 +30,32 @@ public class Message_Controller {
 
     @GetMapping("/getMessages")
     public List<Message_DTO_Response> getMessages(
-            @RequestParam Long chatId,
-            @RequestParam Long currentUserId
+            @RequestParam Long chatId
     ){
+        Long currentUserId = userService.getCurrentUserId();
         return messageService.getMessages(chatId,currentUserId);
     }
     @GetMapping("/getOldMessages")
     public List<Message_DTO_Response> getOldMessages(
             @PathVariable Long chatId,
             @RequestParam("lastMessageTime") LocalDateTime lastMessageTime,
-            @RequestParam(defaultValue = "20") int limit,
-            @RequestParam Long currentUserId
+            @RequestParam(defaultValue = "20") int limit
 
     ){
+        Long currentUserId = userService.getCurrentUserId();
         return messageService.getOlderMessages(chatId,lastMessageTime,limit,currentUserId);
     }
 
     @PostMapping("/readMessage")
     public ResponseEntity<String> markMessageAsRead(@RequestBody Message_read_DTO_request request) {
+        userService.securityUser(request.getUsername());
         messageService.markAsRead(request.getMessageId(), request.getUsername());
         return ResponseEntity.ok("Mesaj okundu olarak işaretlendi.");
     }
 
     @PostMapping("/deleteMessage")
     public ResponseEntity<String> deleteMessageEveryone(@RequestBody Delete_Message_DTO_Request req) {
-
+        userService.securityUser(req.getUserId());
         messageService.deleteFromEveryone(
                 req.getMessageId(),
                 req.getUserId()
@@ -61,7 +66,7 @@ public class Message_Controller {
 
     @PostMapping("/deleteFromMe")
     public ResponseEntity<String> deleteFromMe(@RequestBody Delete_Message_DTO_Request req) {
-
+        userService.securityUser(req.getUserId());
         messageService.deleteFromMe(
                 req.getMessageId(),
                 req.getUserId()

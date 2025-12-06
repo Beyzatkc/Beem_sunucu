@@ -1,4 +1,8 @@
 package com.beem.beem_sunucu.Users;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-public class User_service {
+public class User_service implements UserDetailsService {
     private final User_Repo userRepo;
     private final PasswordEncoder passwordEncoder;
    // private final EmailService emailService;
@@ -39,14 +43,19 @@ public class User_service {
         userRepo.saveAndFlush(entity);
         return new User_Response_DTO(entity);
     }
-    public User_Response_DTO login(String password,String username){
+    public User_Response_DTO getUserDtoByUsername(String username){
         User user=userRepo
                 .findByUsername(username)
                 .orElseThrow(()->new CustomExceptions.AuthenticationException("Kullanıcı adı hatalı."));
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new CustomExceptions.AuthenticationException("Parola hatalı.");
-        }
        return new User_Response_DTO(user);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepo.findByUsername(username)
+                .orElseThrow(()-> new UsernameNotFoundException("Kullanıcı bulunamadı"));
+
+        return new CustomUserDetails(user);
     }
     /*
     public void forgotPassword(String email){
@@ -73,4 +82,24 @@ public class User_service {
         user.setTokenExpiry(null);
         userRepo.save(user);
     }*/
+
+    public Long getUserIdByUsername(String username) {
+        return userRepo.findByUsername(username)
+                .map(User::getId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+    }
+
+    public Long getCurrentUserId() {
+        return (Long) SecurityContextHolder.getContext().getAuthentication().getDetails();
+    }
+
+    public void securityUser(Long id){
+        if(!getCurrentUserId().equals(id))
+            throw new SecurityException("Yasaklı erişim.");
+    }
+    public void securityUser(String  name){
+        if(!SecurityContextHolder.getContext().getAuthentication().getName().equals(name))
+            throw new SecurityException("Yasaklı erişim.");
+    }
+
 }

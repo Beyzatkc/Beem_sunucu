@@ -1,6 +1,7 @@
 package com.beem.beem_sunucu.Follow.FollowRequest;
 
 
+import com.beem.beem_sunucu.Users.User_service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,14 +12,17 @@ import java.util.List;
 public class FollowRequestController {
 
     private final FollowRequestService service;
+    private final User_service userService;
 
     @Autowired
-    public FollowRequestController(FollowRequestService service){
+    public FollowRequestController(FollowRequestService service, User_service userService){
         this.service = service;
+        this.userService = userService;
     }
 
     @PostMapping
     FollowResponseDTO sendFollowRequest(@RequestBody FollowRequestDTO requestDTO){
+        userService.securityUser(requestDTO.getRequesterId());
         return service.sendRequest(requestDTO);
     }
 
@@ -32,13 +36,15 @@ public class FollowRequestController {
         return service.rejectRequest(id);
     }
 
-    @GetMapping("/pending/{requestedId}")
-    public List<FollowResponseDTO> getPendingRequests(@PathVariable Long requestedId) {
+    @GetMapping("/pending")
+    public List<FollowResponseDTO> getPendingRequests() {
+        Long requestedId = userService.getCurrentUserId();
         return service.getPendingRequests(requestedId);
     }
 
-    @GetMapping("/sent/{requesterId}")
-    public List<FollowResponseDTO> getSentRequests(@PathVariable Long requesterId) {
+    @GetMapping("/sent")
+    public List<FollowResponseDTO> getSentRequests() {
+        Long requesterId = userService.getCurrentUserId();
         return service.getSentRequests(requesterId);
     }
 }
