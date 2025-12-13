@@ -35,11 +35,16 @@ services:
 
       JWT_SECRET: BenimCokGucluSecretAnahtarimPofBidSut
       JWT_EXP_MS: 2592000000
+      MAIL_USERNAME: beemdevops@gmail.com
+      MAIL_PASSWORD: ctzoghbgsxgituft
+
+      APP_BASE_URL: https://coleman-nonethic-marinda.ngrok-free.dev
     ports:
       - "8080:8080"
     restart: unless-stopped
     networks:
       - app-network
+
 
   zookeeper:
     image: wurstmeister/zookeeper:latest

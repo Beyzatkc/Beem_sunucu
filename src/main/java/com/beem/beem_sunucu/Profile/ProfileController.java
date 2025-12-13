@@ -8,10 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/profile")
-@CrossOrigin(origins = "http://localhost:3000")
 public class ProfileController {
 
     private final ProfileService service;
@@ -48,7 +46,6 @@ public class ProfileController {
         return ResponseEntity.ok(service.updateProfile(dto));
     }
 
-
     @GetMapping("/posts")
     public Page<Post_DTO_Response> getUserPosts(
             @RequestParam(defaultValue = "0") int page,
@@ -56,5 +53,4 @@ public class ProfileController {
         Long id= userService.getCurrentUserId();
         return service.getUserPosts(id, page, size);
     }
-
 }

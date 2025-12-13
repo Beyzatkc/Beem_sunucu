@@ -38,8 +38,7 @@ public class User {
     @Column(nullable = true)
     private String biography;
 
-    private String resetToken;
-    private LocalDateTime tokenExpiry;
+    private boolean emailVerified = false;
 
     public Long getId() {
         return id;
@@ -113,20 +112,12 @@ public class User {
         this.biography = biography;
     }
 
-    public String getResetToken() {
-        return resetToken;
+    public boolean isEmailVerified() {
+        return emailVerified;
     }
 
-    public void setResetToken(String resetToken) {
-        this.resetToken = resetToken;
-    }
-
-    public LocalDateTime getTokenExpiry() {
-        return tokenExpiry;
-    }
-
-    public void setTokenExpiry(LocalDateTime tokenExpiry) {
-        this.tokenExpiry = tokenExpiry;
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 
 }

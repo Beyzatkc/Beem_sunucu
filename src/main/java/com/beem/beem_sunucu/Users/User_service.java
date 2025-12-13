@@ -1,4 +1,7 @@
 package com.beem.beem_sunucu.Users;
+import com.beem.beem_sunucu.Verification.EmailService;
+import com.beem.beem_sunucu.Verification.EmailVerificationToken;
+import com.beem.beem_sunucu.Verification.TokenRepo;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,13 +17,14 @@ import java.util.UUID;
 public class User_service implements UserDetailsService {
     private final User_Repo userRepo;
     private final PasswordEncoder passwordEncoder;
-   // private final EmailService emailService;
-    //private final EmailService emailService;
+    private final TokenRepo tokenRepo;
+    private final EmailService emailService;
 
-    public User_service(User_Repo userRepo, PasswordEncoder passwordEncoder) {
+    public User_service(User_Repo userRepo, PasswordEncoder passwordEncoder, TokenRepo tokenRepo, EmailService emailService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
-        //this.emailService = emailService;
+        this.tokenRepo = tokenRepo;
+        this.emailService = emailService;
     }
     @Transactional
     public User_Response_DTO register(User_Request_DTO user){
@@ -40,14 +44,26 @@ public class User_service implements UserDetailsService {
         entity.setBiography(user.getBiography());
         entity.setProfile(user.getProfile());
         entity.setEmail(user.getEmail());
+        entity.setEmailVerified(false);
         userRepo.saveAndFlush(entity);
+
+        String token=UUID.randomUUID().toString();
+
+        EmailVerificationToken verification=new EmailVerificationToken();
+        verification.setToken(token);
+        verification.setUser(entity);
+        verification.setExpiryDate(LocalDateTime.now().plusMinutes(5));
+        tokenRepo.saveAndFlush(verification);
+        emailService.sendVerificationMail(user.getEmail(), token);
+
+
         return new User_Response_DTO(entity);
     }
     public User_Response_DTO getUserDtoByUsername(String username){
         User user=userRepo
                 .findByUsername(username)
                 .orElseThrow(()->new CustomExceptions.AuthenticationException("Kullanıcı adı hatalı."));
-       return new User_Response_DTO(user);
+        return new User_Response_DTO(user);
     }
 
     @Override

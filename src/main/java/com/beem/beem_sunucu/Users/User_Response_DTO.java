@@ -11,6 +11,7 @@ public class User_Response_DTO {
     private String profile;
     private LocalDateTime Date;
     private String biography;
+    private boolean emailVerified;
 
     public User_Response_DTO(User user){
         this.id = user.getId();
@@ -21,6 +22,7 @@ public class User_Response_DTO {
         this.profile = user.getProfile();
         Date = user.getDate();
         this.biography = user.getBiography();
+        this.emailVerified=user.isEmailVerified();
     }
 
     public Long getId() {
@@ -85,5 +87,13 @@ public class User_Response_DTO {
 
     public void setBiography(String biography) {
         this.biography = biography;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }
