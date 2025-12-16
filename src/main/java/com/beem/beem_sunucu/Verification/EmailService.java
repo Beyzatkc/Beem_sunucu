@@ -46,10 +46,10 @@ public class EmailService {
     public String verifyEmail(String token){
         EmailVerificationToken verification =
                 tokenRepo.findByToken(token)
-                        .orElseThrow(() -> new RuntimeException("Token geçersiz"));
+                        .orElseThrow(() -> new SecurityException("Token geçersiz"));
 
         if (verification.getExpiryDate().isBefore(LocalDateTime.now())) {
-            return "Token süresi dolmuş";
+            throw  new SecurityException("Token süresi dolmuş");
         }
 
         User user = verification.getUser();

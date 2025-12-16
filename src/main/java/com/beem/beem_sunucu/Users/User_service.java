@@ -56,7 +56,6 @@ public class User_service implements UserDetailsService {
         tokenRepo.saveAndFlush(verification);
         emailService.sendVerificationMail(user.getEmail(), token);
 
-
         return new User_Response_DTO(entity);
     }
     public User_Response_DTO getUserDtoByUsername(String username){
