@@ -11,6 +11,11 @@ import java.util.Optional;
 
 interface Postof_Like_Repo extends JpaRepository<Post_Like,Long> {
     Optional<Post_Like> findByPost_PostIdAndUser_Id(Long postId, Long userId);
+
+    @Query("SELECT pl.post.postId FROM Post_Like pl WHERE pl.user.id = :userId")
+    List<Long> findPostIdsByUserId(@Param("userId") Long userId);
+
+
     @Query(
             value = """
         SELECT pl.*

@@ -1,8 +1,4 @@
 package com.beem.beem_sunucu.Comments;
-
-import com.beem.beem_sunucu.Posts.Post_DTO_Request;
-import com.beem.beem_sunucu.Posts.Post_DTO_Response;
-import com.beem.beem_sunucu.Posts.Post_DTO_Update;
 import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
 import com.beem.beem_sunucu.Users.User_service;

@@ -5,10 +5,7 @@ import com.beem.beem_sunucu.Users.User_Response_DTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -36,5 +33,17 @@ public class VerificationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/forgotPassword")
+    public void requestResetPassword(@RequestParam String email){
+        emailService.forgotPassword(email);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @RequestParam String token,
+            @RequestBody ResetPasswordDTO request
+    ) {
+        return ResponseEntity.ok(emailService.verifyNewPassword(token,request));
+    }
 
 }

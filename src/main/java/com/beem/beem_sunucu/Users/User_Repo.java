@@ -9,12 +9,15 @@ import java.util.Optional;
 
 public interface User_Repo extends JpaRepository<User,Long> {
     Optional<User>findByUsername(String username);
+    Optional<User>findByEmail(String email);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 
     Page<User> findByUsernameContainingIgnoreCase(String keyword, Pageable pageable);
 
     Page<User> findAllByIdIn(List<Long> ids, Pageable pageable);
+
+
 
     List<User> findAllByIdIn(List<Long> ids);
 }

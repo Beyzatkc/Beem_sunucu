@@ -22,6 +22,22 @@ public class Post_DTO_Response {
 
     private String categories;
 
+    private boolean isLiked=false;
+
+
+    public void setCategories(String categories) {
+        this.categories = categories;
+    }
+
+    public boolean isLiked() {
+        return isLiked;
+    }
+
+    public void setLiked(boolean liked) {
+        isLiked = liked;
+    }
+
+
     public User_Response_DTO getUser() {
         return user;
     }
@@ -83,9 +99,6 @@ public class Post_DTO_Response {
         return categories;
     }
 
-    public void setCategories(String categories) {
-        this.categories = categories;
-    }
 
     public Post_DTO_Response(Post post) {
         this.post_id = post.getPostId();

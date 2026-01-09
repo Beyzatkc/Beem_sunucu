@@ -88,6 +88,7 @@ public class Post_Service {
 
 
     public List<Post_DTO_Response> homePagePosts(Long currentUserId, int page, int size) {
+
         //takip edilen kullanicialri getirid
         List<Long> followIds = followRepository.findFollowedIds(currentUserId);
 
@@ -100,7 +101,17 @@ public class Post_Service {
         Page<Post> postPage = postRepo.findHomePagePostsNative( currentUserId, followIds, followLikes, pageable);
 
         List<Post> posts = postPage.getContent();
-        return posts.stream().map(post -> new Post_DTO_Response(post)).toList();
+
+        List<Long> likedPostIds = postofLikeRepo.findPostIdsByUserId(currentUserId);
+
+        List<Post_DTO_Response> responses = posts.stream().map(post -> {
+            Post_DTO_Response response = new Post_DTO_Response(post);
+            if(likedPostIds.contains(post.getPostId())){
+                response.setLiked(true);
+            }
+            return response;
+        }).toList();
+        return responses;
     }
 
     public void deletePost(Long postId,Long userId){

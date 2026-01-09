@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -21,12 +23,13 @@ public class Post_Controller {
         this.postService = postService;
         this.userService = userService;
     }
-    
     @PostMapping("/addPost")
-    public Post_DTO_Response addPost(@Valid @RequestBody Post_DTO_Request postDto) {
+    public ResponseEntity<Post_DTO_Response> addPost(@Valid @RequestBody Post_DTO_Request postDto) {
         userService.securityUser(postDto.getUser_id());
-        return postService.postCreate(postDto);
+        Post_DTO_Response response = postService.postCreate(postDto);
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/getUserPosts") //
     public List<Post_DTO_Response> getUserPosts(
@@ -38,18 +41,22 @@ public class Post_Controller {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<String> toggleLike(
+    public ResponseEntity<Map<String, String>> toggleLike(
             @PathVariable Long postId
     ) {
+        Map<String, String> message = new HashMap<>();
         Long userId= userService.getCurrentUserId();
         try {
             String result = postService.toggleLike(postId, userId);
-            return ResponseEntity.ok(result);
+            message.put("message", result);
+            return ResponseEntity.ok(message);
         } catch (CustomExceptions.AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            message.put("error",e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
         } catch (Exception e) {
+            message.put("error",e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Bir hata oluştu: " + e.getMessage());
+                    .body(message);
         }
     }
 

@@ -1,17 +1,11 @@
-package com.beem.beem_sunucu.Users;
+package com.beem.beem_sunucu.Verification;
 
 public class ResetPasswordDTO {
-    private String token;
     private String newPassword;
 
-    public String getToken() {
-        return token;
-    }
+    public ResetPasswordDTO(){
 
-    public void setToken(String token) {
-        this.token = token;
     }
-
     public String getNewPassword() {
         return newPassword;
     }

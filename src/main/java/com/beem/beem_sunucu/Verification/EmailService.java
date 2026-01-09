@@ -5,13 +5,18 @@ import com.beem.beem_sunucu.Users.User_Repo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class EmailService {
     private final JavaMailSender mailSender;
+    private final PasswordEncoder passwordEncoder;
     private final TokenRepo tokenRepo;
     private final User_Repo userRepo;
 
@@ -19,8 +24,9 @@ public class EmailService {
     private String baseURL;
 
 
-    public EmailService(JavaMailSender mailSender, TokenRepo tokenRepo, User_Repo userRepo) {
+    public EmailService(JavaMailSender mailSender, PasswordEncoder passwordEncoder, TokenRepo tokenRepo, User_Repo userRepo) {
         this.mailSender = mailSender;
+        this.passwordEncoder = passwordEncoder;
         this.tokenRepo = tokenRepo;
         this.userRepo = userRepo;
     }
@@ -59,4 +65,66 @@ public class EmailService {
 
         return "Email doğrulandı";
     }
+    public void forgotPassword(String email) {
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new SecurityException("Kullanıcı bulunamadı!"));
+
+        String token = UUID.randomUUID().toString();
+
+        EmailVerificationToken resetToken = new EmailVerificationToken();
+        resetToken.setToken(token);
+        resetToken.setUser(user);
+        resetToken.setExpiryDate(
+                LocalDateTime.now().plusMinutes(5)
+        );
+
+        tokenRepo.save(resetToken);
+
+        forgotPasswordMail(email, token);
+    }
+    public void forgotPasswordMail(String toEmail, String token) {
+
+        String subject = "Şifre Sıfırlama Talebi";
+
+        String resetLink =
+                baseURL + "/auth/reset-password?resetpasswordtoken=" + token;
+
+        String body =
+                "Merhaba,\n\n" +
+                        "Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:\n\n" +
+                        resetLink +
+                        "\n\nBu bağlantı 5 dakika boyunca geçerlidir.\n" +
+                        "Eğer bu isteği siz yapmadıysanız, lütfen bu e-postayı dikkate almayın.";
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom("beemdevops@gmail.com");
+        mail.setTo(toEmail);
+        mail.setSubject(subject);
+        mail.setText(body);
+
+        mailSender.send(mail);
+    }
+    public Map<String, String> verifyNewPassword(String token, ResetPasswordDTO dto){
+        EmailVerificationToken verification =
+                tokenRepo.findByToken(token)
+                        .orElseThrow(() -> new SecurityException("Token geçersiz"));
+
+        if (verification.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw  new SecurityException("Token süresi dolmuş");
+        }
+
+        User user = verification.getUser();
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+
+        userRepo.save(user);
+        tokenRepo.delete(verification);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message","Email doğrulandı");
+
+        return response;
+
+    }
+
 }

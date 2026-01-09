@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 public class Post_DTO_Request {
-    private Long post_id;
 
     private Long user_id;
 
@@ -20,14 +19,6 @@ public class Post_DTO_Request {
 
     private String coverImage;
 
-
-    public Long getPost_id() {
-        return post_id;
-    }
-
-    public void setPost_id(Long post_id) {
-        this.post_id = post_id;
-    }
 
     public Long getUser_id() {
         return user_id;
