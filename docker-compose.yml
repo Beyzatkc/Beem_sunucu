@@ -52,6 +52,8 @@ services:
     ports:
       - "2181:2181"
     restart: unless-stopped
+    volumes:
+      - kafka-data:/kafka
     networks:
       - app-network
     environment:
@@ -66,6 +68,8 @@ services:
     ports:
       - "9092:9092"
     restart: unless-stopped
+    volumes:
+      - zookeeper-data:/data
     networks:
       - app-network
     environment:
@@ -86,6 +90,8 @@ services:
     ports:
       - "27017:27017"
     restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
     networks:
       - app-network
 
@@ -102,6 +108,7 @@ volumes:
   mysql-data:
   kafka-data:
   zookeeper-data:
+  mongo-data:
 
 networks:
   app-network:
