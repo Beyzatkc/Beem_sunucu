@@ -4,15 +4,14 @@ services:
   db:
     image: mysql:8
     container_name: spring_mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: springdb
+    env_file:
+      - .env
     ports:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD","mysqladmin","ping","-h","127.0.0.1","-uroot","-prootpassword"]
+      test: [ "CMD","mysqladmin","ping","-h","127.0.0.1","-uroot","-p${MYSQL_ROOT_PASSWORD}" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -22,23 +21,11 @@ services:
   app:
     build: .
     container_name: spring_app
+    env_file:
+      - .env
     depends_on:
       - db
       - mongodb
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/springdb?useSSL=false&serverTimezone=UTC
-      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/springdb
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: rootpassword
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SERVER_PORT: 8080
-
-      JWT_SECRET: BenimCokGucluSecretAnahtarimPofBidSut
-      JWT_EXP_MS: 2592000000
-      MAIL_USERNAME: beemdevops@gmail.com
-      MAIL_PASSWORD: ctzoghbgsxgituft
-
-      APP_BASE_URL: https://coleman-nonethic-marinda.ngrok-free.dev
     ports:
       - "8080:8080"
     restart: unless-stopped
