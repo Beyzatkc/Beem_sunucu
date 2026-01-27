@@ -72,31 +72,6 @@ public class User_service implements UserDetailsService {
 
         return new CustomUserDetails(user);
     }
-    /*
-    public void forgotPassword(String email){
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(()->new CustomExceptions.AuthenticationException("Email bulunamadı."));
-        String token = UUID.randomUUID().toString();
-        user.setResetToken(token);
-        user.setTokenExpiry(LocalDateTime.now().plusHours(1));
-        userRepo.save(user);
-      //  emailService.sendResetEmail(user.getEmail(), token);
-    }
-    public void resetPassword(String token,String newPassword){
-        if (newPassword.length() < 6) {
-            throw new CustomExceptions.ValidationException("Şifre en az 6 karakter olmalı");
-        }
-        User user = userRepo.findByResetToken(token)
-                .orElseThrow(() -> new CustomExceptions.AuthenticationException("Geçersiz veya süresi dolmuş"));
-
-        if (user.getTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new CustomExceptions.AuthenticationException("Süresi dolmuş");
-        }
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.setResetToken(null);
-        user.setTokenExpiry(null);
-        userRepo.save(user);
-    }*/
 
     public Long getUserIdByUsername(String username) {
         return userRepo.findByUsername(username)

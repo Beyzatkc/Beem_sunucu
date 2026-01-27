@@ -121,10 +121,9 @@ public class EmailService {
         tokenRepo.delete(verification);
 
         Map<String, String> response = new HashMap<>();
-        response.put("message","Email doğrulandı");
+        response.put("message","Şifre değiştirildi.");
 
         return response;
-
     }
 
 }

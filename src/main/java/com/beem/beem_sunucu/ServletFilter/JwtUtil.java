@@ -44,13 +44,13 @@ public class JwtUtil {
             return false;
         }
     }
-    public String getUsername(String token){
-        return Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                public String getUsername(String token){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                    return Jwts.parserBuilder()
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .build()
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .parseClaimsJws(token)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .getBody()
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .getSubject();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 
 }

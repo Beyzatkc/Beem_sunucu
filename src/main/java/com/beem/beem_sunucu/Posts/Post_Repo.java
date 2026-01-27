@@ -14,10 +14,24 @@ import java.util.List;
 public interface Post_Repo extends JpaRepository<Post,Long> {
     Page<Post> findByUser_Id(Long userId, Pageable pageable);
 
-    @Transactional
     @Modifying
-    @Query("UPDATE Post p SET p.numberofLikes = :numberOfLikes WHERE p.postId = :postId")
-    void updateLikeCount(@Param("postId") Long postId, @Param("numberOfLikes") int numberOfLikes);
+    @Query("""
+   UPDATE Post p
+   SET p.numberofLikes = p.numberofLikes + 1
+   WHERE p.postId = :postId
+""")
+    void incrementLike(@Param("postId") Long postId);
+
+    @Modifying
+    @Query("""
+   UPDATE Post p
+   SET p.numberofLikes = p.numberofLikes - 1
+   WHERE p.postId = :postId
+     AND p.numberofLikes > 0
+""")
+    void decrementLike(@Param("postId") Long postId);
+
+
 
     Long countByUser_Id(Long userId);
     @Query(value = """

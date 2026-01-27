@@ -61,19 +61,14 @@ public class Post_Service {
         Optional<Post_Like> existingLike = postofLikeRepo.findByPost_PostIdAndUser_Id(postId, userId);
         if (existingLike.isPresent()) {
             postofLikeRepo.delete(existingLike.get());
-
-            int newCount = Math.max(0, post.getNumberofLikes() - 1);
-            postRepo.updateLikeCount(postId, newCount);
-
+            postRepo.decrementLike(postId);
             return "Beğeni kaldırıldı";
         } else {
             Post_Like like = new Post_Like();
             like.setPost(post);
             like.setUser(user);
             postofLikeRepo.saveAndFlush(like);
-
-            int newCount = post.getNumberofLikes() + 1;
-            postRepo.updateLikeCount(postId, newCount);
+            postRepo.incrementLike(postId);
 
             return "Gönderi beğenildi";
         }

@@ -16,8 +16,6 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class VerificationController {
     private final EmailService emailService;
-    @Value("${app.base-url}")
-    private String baseURL;
 
     public VerificationController(EmailService emailService) {
         this.emailService = emailService;
@@ -33,7 +31,7 @@ public class VerificationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/forgotPassword")
+    @PostMapping("/forgotPassword")
     public void requestResetPassword(@RequestParam String email){
         emailService.forgotPassword(email);
     }

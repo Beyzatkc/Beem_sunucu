@@ -5,6 +5,7 @@ import com.beem.beem_sunucu.Users.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -38,10 +39,10 @@ public class Comment {
 
 
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> subComments;
+    private List<Comment> subComments=new ArrayList<>();
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment_Like> likes;
+    private List<Comment_Like> likes=new ArrayList<>();
 
 
 
