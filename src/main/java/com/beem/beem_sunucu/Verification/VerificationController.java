@@ -2,6 +2,7 @@ package com.beem.beem_sunucu.Verification;
 
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,16 +33,23 @@ public class VerificationController {
     }
 
     @PostMapping("/forgotPassword")
-    public void requestResetPassword(@RequestParam String email){
-        emailService.forgotPassword(email);
+    public ResponseEntity<Map<String, String>> requestResetPassword(@RequestParam String email){
+        return ResponseEntity.ok(emailService.forgotPassword(email));
     }
 
-    @PostMapping("/reset-password")
+    @GetMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(
-            @RequestParam String token,
-            @RequestBody ResetPasswordDTO request
+            @RequestParam String token
     ) {
-        return ResponseEntity.ok(emailService.verifyNewPassword(token,request));
+        return ResponseEntity.ok(emailService.verifyNewPassword(token));
+    }
+
+    @PostMapping("/savePassword")
+    public ResponseEntity<Map<String, String>> saveNewPassword(
+            @RequestParam String token,
+            @RequestBody @Valid ResetPasswordDTO dto
+    ) {
+        return ResponseEntity.ok(emailService.saveNewPassword(token, dto));
     }
 
 }

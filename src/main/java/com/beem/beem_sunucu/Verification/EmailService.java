@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Verification;
 
+import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -52,10 +54,10 @@ public class EmailService {
     public String verifyEmail(String token){
         EmailVerificationToken verification =
                 tokenRepo.findByToken(token)
-                        .orElseThrow(() -> new SecurityException("Token geçersiz"));
+                        .orElseThrow(() -> new CustomExceptions.InvalidTokenException("Token geçersiz"));
 
         if (verification.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw  new SecurityException("Token süresi dolmuş");
+            throw  new CustomExceptions.InvalidTokenException("Token süresi dolmuş");
         }
 
         User user = verification.getUser();
@@ -65,10 +67,20 @@ public class EmailService {
 
         return "Email doğrulandı";
     }
-    public void forgotPassword(String email) {
+    public  Map<String, String> forgotPassword(String email) {
 
         User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new SecurityException("Kullanıcı bulunamadı!"));
+                .orElseThrow(() -> new CustomExceptions.NotFoundException("Kullanıcı bulunamadı!"));
+        if(!user.isEmailVerified()){
+            throw new CustomExceptions.ValidationException("Email doğrulaması yapılmamış");
+        }
+        Optional<EmailVerificationToken> existingToken = tokenRepo.findByUser_Id(user.getId());
+
+        if(existingToken.isPresent()){
+            throw new CustomExceptions.DuplicateTokenException(
+                    "Kullanıcı için aktif bir şifre reset token zaten mevcut. Lütfen mailinizi kontrol edin."
+            );
+        }
 
         String token = UUID.randomUUID().toString();
 
@@ -82,13 +94,14 @@ public class EmailService {
         tokenRepo.save(resetToken);
 
         forgotPasswordMail(email, token);
+        return Map.of("message", "Basarili");
     }
     public void forgotPasswordMail(String toEmail, String token) {
 
         String subject = "Şifre Sıfırlama Talebi";
 
         String resetLink =
-                baseURL + "/auth/reset-password?resetpasswordtoken=" + token;
+                baseURL + "/auth/reset-password?token=" + token;
 
         String body =
                 "Merhaba,\n\n" +
@@ -105,13 +118,29 @@ public class EmailService {
 
         mailSender.send(mail);
     }
-    public Map<String, String> verifyNewPassword(String token, ResetPasswordDTO dto){
+    public Map<String, String> verifyNewPassword(String token){
+        EmailVerificationToken verification =
+                tokenRepo.findByToken(token)
+                        .orElseThrow(() -> new CustomExceptions.InvalidTokenException("Token geçersiz"));
+
+        if (verification.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new CustomExceptions.InvalidTokenException("Token süresi dolmuş");
+        }
+
+        return Map.of("message", "Token geçerli");
+    }
+
+    public Map<String, String> saveNewPassword(String token, ResetPasswordDTO dto){
+
         EmailVerificationToken verification =
                 tokenRepo.findByToken(token)
                         .orElseThrow(() -> new SecurityException("Token geçersiz"));
 
         if (verification.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw  new SecurityException("Token süresi dolmuş");
+            throw new CustomExceptions.InvalidTokenException("Token süresi dolmuş");
+        }
+        if(!dto.getNewPassword().equals(dto.getConfirmPassword())){
+            throw new CustomExceptions.AuthorizationException("Şifreler uyuşmuyor");
         }
 
         User user = verification.getUser();
@@ -120,10 +149,8 @@ public class EmailService {
         userRepo.save(user);
         tokenRepo.delete(verification);
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message","Şifre değiştirildi.");
-
-        return response;
+        return Map.of("message", "Şifre değiştirildi");
     }
+
 
 }

@@ -35,6 +35,7 @@ public class User_service implements UserDetailsService {
         if(userRepo.existsByEmail(user.getEmail())){
             throw new CustomExceptions.UserAlreadyExistsException("Bu Email zaten kayıtlı");
         }
+
         User entity=new User();
         entity.setUsername(user.getUsername());
         entity.setPassword(passwordEncoder.encode(user.getPassword()));
