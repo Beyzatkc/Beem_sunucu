@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Follow;
 
+import com.beem.beem_sunucu.Follow.FollowRequest.FollowResponseDTO;
 import com.beem.beem_sunucu.Users.User;
 
 public class FollowUserResponseDTO {
@@ -7,17 +8,17 @@ public class FollowUserResponseDTO {
     private String username;
     private String profile;
     private String biography;
-    private boolean followed;
+    private FollowResponseDTO followInfo;
 
     public FollowUserResponseDTO(){
     }
 
-    public FollowUserResponseDTO(User user, boolean followed){
+    public FollowUserResponseDTO(User user, FollowResponseDTO followInfo){
         this.id = user.getId();
         this.username = user.getUsername();
         this.profile = user.getProfile();
         this.biography = user.getBiography();
-        this.followed = followed;
+        this.followInfo = followInfo;
     }
 
     public Long getId() {
@@ -52,11 +53,11 @@ public class FollowUserResponseDTO {
         this.biography = biography;
     }
 
-    public boolean isFollowed() {
-        return followed;
+    public FollowResponseDTO getFollowInfo() {
+        return followInfo;
     }
 
-    public void setFollowed(boolean followed) {
-        this.followed = followed;
+    public void setFollowInfo(FollowResponseDTO followInfo) {
+        this.followInfo = followInfo;
     }
 }

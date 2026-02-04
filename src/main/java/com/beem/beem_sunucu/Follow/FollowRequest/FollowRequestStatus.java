@@ -5,5 +5,6 @@ public enum FollowRequestStatus {
     ACCEPTED,
     REJECTED,
     UNFOLLOW,
-    BLOCKED
+    BLOCKED,
+    CANCEL
 }

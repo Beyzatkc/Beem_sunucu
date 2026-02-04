@@ -25,16 +25,18 @@ public class FollowServices {
     private final FollowRepository followRepository;
     private final User_Repo userRepository;
     private final FollowRequestRepositorty followRequestRepositorty;
+    private final FollowMapper mapper;
 
     @Autowired
     public FollowServices(
             FollowRepository followRepository,
             User_Repo userRepository,
-            FollowRequestRepositorty followRequestRepositorty
+            FollowRequestRepositorty followRequestRepositorty, FollowMapper mapper
     ){
         this.followRepository = followRepository;
         this.userRepository = userRepository;
         this.followRequestRepositorty = followRequestRepositorty;
+        this.mapper = mapper;
     }
 
     @Transactional
@@ -111,8 +113,19 @@ public class FollowServices {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<User> userPage = userRepository.findAllByIdIn(followingList,pageable);
+
+        Map<Long, FollowSendRequest> myPendingRequest = myPendingRequest(userPage.getContent(), id);
+
         return userPage.getContent()
-                .stream().map(user -> new FollowUserResponseDTO(user,true)).toList();
+                .stream().map(user -> {
+                    return new FollowUserResponseDTO(
+                            user,
+                            mapper.toFollowResponseDTO(
+                                    myPendingRequest.get(user.getId())
+                            )
+                    );
+                })
+                .toList();
     }
 
     @Transactional
@@ -127,14 +140,19 @@ public class FollowServices {
         if(followedList.isEmpty()){
             return Collections.emptyList();
         }
-        Set<Long> followingSet = followRepository.findByFollowingId(id)
-                .stream().map(Follow::getFollowedId)
-                .collect(Collectors.toSet());
-
         Pageable pageable = PageRequest.of(page, size);
         Page<User> userPage = userRepository.findAllByIdIn(followedList,pageable);
+
+        Map<Long ,FollowSendRequest> myPendingRequest = myPendingRequest(userPage.getContent(), id);
         return userPage.getContent()
-                .stream().map(user -> new FollowUserResponseDTO(user,followingSet.contains(user.getId()))).toList();
+                .stream().map(user -> new FollowUserResponseDTO(
+                        user,
+                        mapper.toFollowResponseDTO(
+                                myPendingRequest.get(user.getId())
+                        )
+                        )
+                )
+                .toList();
     }
 
     @Transactional
@@ -148,14 +166,21 @@ public class FollowServices {
             return Collections.emptyList();
         }
 
-        Set<Long> myFollowingList = new HashSet<>(followRepository.findByFollowingId(myid).stream().map(Follow::getFollowedId).toList());
         Pageable pageable = PageRequest.of(page,size);
 
         Page<User> userPage = userRepository.findAllByIdIn(targetUserfollowingList, pageable);
 
+        Map<Long ,FollowSendRequest> myPendingRequest = myPendingRequest(userPage.getContent(), myid);
 
         return userPage.getContent()
-                .stream().map(user -> new FollowUserResponseDTO(user, myFollowingList.contains(user.getId()))).toList();
+                .stream().map(user -> new FollowUserResponseDTO(
+                        user,
+                        mapper.toFollowResponseDTO(
+                                myPendingRequest.get(user.getId())
+                        )
+                )
+                )
+                .toList();
     }
 
     @Transactional
@@ -169,16 +194,42 @@ public class FollowServices {
             return Collections.emptyList();
         }
 
-        Set<Long> myFollowingList = new HashSet<>(followRepository.findByFollowingId(myid).stream().map(Follow::getFollowedId).toList());
         Pageable pageable = PageRequest.of(page,size);
 
         Page<User> userPage = userRepository.findAllByIdIn(targetUserfollowedList, pageable);
 
+        Map<Long ,FollowSendRequest> myPendingRequest = myPendingRequest(userPage.getContent(), myid);
 
         return userPage.getContent()
-                .stream().map(user -> new FollowUserResponseDTO(user, myFollowingList.contains(user.getId()))).toList();
+                .stream().map(
+                        user -> new FollowUserResponseDTO(
+                                user,
+                                mapper.toFollowResponseDTO(
+                                        myPendingRequest.get(user.getId())
+                                )
+                        )
+                )
+                .toList();
 
     }
+
+    private Map<Long ,FollowSendRequest> myPendingRequest(List<User> userList, Long id){
+        Set<Long> followingUserIds = userList
+                .stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+        return followRequestRepositorty.findAllOrderByStatusPriority(
+                        id,
+                        followingUserIds
+                )
+                .stream()
+                .collect(Collectors.toMap(
+                        request -> request.getRequested().getId(),
+                        request -> request,
+                        (oldVal, newVal) -> oldVal
+                ));
+    }
+
 
 
 }
