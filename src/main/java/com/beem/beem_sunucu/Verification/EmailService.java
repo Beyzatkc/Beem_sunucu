@@ -74,13 +74,18 @@ public class EmailService {
         if(!user.isEmailVerified()){
             throw new CustomExceptions.ValidationException("Email doğrulaması yapılmamış");
         }
+
         Optional<EmailVerificationToken> existingToken = tokenRepo.findByUser_Id(user.getId());
 
-        if(existingToken.isPresent()){
-            throw new CustomExceptions.DuplicateTokenException(
-                    "Kullanıcı için aktif bir şifre reset token zaten mevcut. Lütfen mailinizi kontrol edin."
-            );
-        }
+        existingToken.ifPresent(token -> {
+            if (token.getExpiryDate().isAfter(LocalDateTime.now())) {
+                throw new CustomExceptions.DuplicateTokenException(
+                        "Kullanıcı için aktif bir şifre reset linki zaten mevcut. Lütfen mailinizi kontrol edin."
+                );
+            } else {
+                tokenRepo.delete(token);
+            }
+        });
 
         String token = UUID.randomUUID().toString();
 
@@ -149,7 +154,7 @@ public class EmailService {
         userRepo.save(user);
         tokenRepo.delete(verification);
 
-        return Map.of("message", "Şifre değiştirildi");
+        return Map.of("message", "Şifre değiştirildi.Giriş yapabilirsiniz!");
     }
 
 
