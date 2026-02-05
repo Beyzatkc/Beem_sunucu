@@ -22,6 +22,14 @@ public class FollowMapper {
         return dto;
     }
 
+    public FollowUserResponseDTO toFollowUserResponseDTO(User user, FollowSendRequest entity, boolean isMyFollower, boolean isFollowingYou){
+        return new FollowUserResponseDTO(
+                user,
+                this.toFollowResponseDTO(entity),
+                isMyFollower,
+                isFollowingYou
+        );
+    }
 
     public SimpleUserDTO toSimpleUserDTO(User user) {
         if (user == null) return null;

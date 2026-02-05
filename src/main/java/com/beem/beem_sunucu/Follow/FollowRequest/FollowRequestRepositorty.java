@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,4 +46,24 @@ public interface FollowRequestRepositorty extends JpaRepository<FollowSendReques
             @Param("requesterId") Long requesterId,
             @Param("requestedIds") Set<Long> requestedIds
     );
+
+    @Query(value = """
+    SELECT *
+    FROM followrequests
+    WHERE requested_id = :requestedId
+      AND requester_id IN (:requesterIds)
+    ORDER BY
+        CASE status
+            WHEN 'PENDING'  THEN 1
+            WHEN 'ACCEPTED' THEN 2
+            ELSE 3
+        END,
+        date DESC
+    """, nativeQuery = true)
+    List<FollowSendRequest> findAllOrderByStatusPriorityFollowers(
+            @Param("requestedId") Long requestedId,
+            @Param("requesterIds") Set<Long> requesterIds
+    );
+
+
 }
