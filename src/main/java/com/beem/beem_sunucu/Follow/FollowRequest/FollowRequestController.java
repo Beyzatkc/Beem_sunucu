@@ -36,6 +36,11 @@ public class FollowRequestController {
         return service.rejectRequest(id);
     }
 
+    @PutMapping("/{id}/cancel")
+    public FollowResponseDTO cancelFollowRequest(@PathVariable Long id) {
+        return service.cancelRequest(id);
+    }
+
     @GetMapping("/pending")
     public List<FollowResponseDTO> getPendingRequests() {
         Long requestedId = userService.getCurrentUserId();

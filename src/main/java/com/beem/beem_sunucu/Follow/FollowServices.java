@@ -2,10 +2,10 @@ package com.beem.beem_sunucu.Follow;
 
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestRepositorty;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestStatus;
+import com.beem.beem_sunucu.Follow.FollowRequest.FollowResponseDTO;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowSendRequest;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
-import com.beem.beem_sunucu.Users.User_Response_DTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.data.domain.Pageable;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,16 +26,18 @@ public class FollowServices {
     private final FollowRepository followRepository;
     private final User_Repo userRepository;
     private final FollowRequestRepositorty followRequestRepositorty;
+    private final FollowMapper mapper;
 
     @Autowired
     public FollowServices(
             FollowRepository followRepository,
             User_Repo userRepository,
-            FollowRequestRepositorty followRequestRepositorty
+            FollowRequestRepositorty followRequestRepositorty, FollowMapper mapper
     ){
         this.followRepository = followRepository;
         this.userRepository = userRepository;
         this.followRequestRepositorty = followRequestRepositorty;
+        this.mapper = mapper;
     }
 
     @Transactional
@@ -111,8 +114,12 @@ public class FollowServices {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<User> userPage = userRepository.findAllByIdIn(followingList,pageable);
-        return userPage.getContent()
-                .stream().map(user -> new FollowUserResponseDTO(user,true)).toList();
+
+
+        return lastModified(
+                userPage.getContent(),
+                id
+        );
     }
 
     @Transactional
@@ -124,17 +131,17 @@ public class FollowServices {
                 .stream().map(Follow::getFollowingId)
                 .toList();
 
+
         if(followedList.isEmpty()){
             return Collections.emptyList();
         }
-        Set<Long> followingSet = followRepository.findByFollowingId(id)
-                .stream().map(Follow::getFollowedId)
-                .collect(Collectors.toSet());
-
         Pageable pageable = PageRequest.of(page, size);
         Page<User> userPage = userRepository.findAllByIdIn(followedList,pageable);
-        return userPage.getContent()
-                .stream().map(user -> new FollowUserResponseDTO(user,followingSet.contains(user.getId()))).toList();
+
+        return lastModified(
+                userPage.getContent(),
+                id
+        );
     }
 
     @Transactional
@@ -148,14 +155,14 @@ public class FollowServices {
             return Collections.emptyList();
         }
 
-        Set<Long> myFollowingList = new HashSet<>(followRepository.findByFollowingId(myid).stream().map(Follow::getFollowedId).toList());
         Pageable pageable = PageRequest.of(page,size);
 
         Page<User> userPage = userRepository.findAllByIdIn(targetUserfollowingList, pageable);
 
-
-        return userPage.getContent()
-                .stream().map(user -> new FollowUserResponseDTO(user, myFollowingList.contains(user.getId()))).toList();
+        return lastModified(
+                userPage.getContent(),
+                myid
+        );
     }
 
     @Transactional
@@ -169,15 +176,115 @@ public class FollowServices {
             return Collections.emptyList();
         }
 
-        Set<Long> myFollowingList = new HashSet<>(followRepository.findByFollowingId(myid).stream().map(Follow::getFollowedId).toList());
         Pageable pageable = PageRequest.of(page,size);
 
         Page<User> userPage = userRepository.findAllByIdIn(targetUserfollowedList, pageable);
 
+        return lastModified(
+                userPage.getContent(),
+                myid
+        );
 
-        return userPage.getContent()
-                .stream().map(user -> new FollowUserResponseDTO(user, myFollowingList.contains(user.getId()))).toList();
+    }
 
+    private Map<Long ,FollowSendRequest> myPendingRequest(List<User> userList, Long id){
+        Set<Long> filter = extractUserIds(userList);
+        return
+                toRequestMapFollowing(
+                        followRequestRepositorty.findAllOrderByStatusPriority(
+                                id,
+                                filter
+                        )
+                );
+    }
+
+    private Set<Long> extractUserIds(List<User> users) {
+        return users.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+    }
+
+
+    private Map<Long ,FollowSendRequest> getMyFollowersRequests(List<User> userList, Long id){
+        Set<Long> filter = extractUserIds(userList);
+
+        return
+                toRequestMapFollowers(followRequestRepositorty
+                    .findAllOrderByStatusPriorityFollowers(
+                            id,
+                            filter
+                    ));
+    }
+
+    private Map<Long, FollowSendRequest> toRequestMapFollowing(List<FollowSendRequest> requests) {
+        return requests.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getRequested().getId(),
+                        Function.identity(),
+                        (existing, ignored) -> existing
+                ));
+    }
+    private Map<Long, FollowSendRequest> toRequestMapFollowers(List<FollowSendRequest> requests) {
+        return requests.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getRequester().getId(),
+                        Function.identity(),
+                        (existing, ignored) -> existing
+                ));
+    }
+
+
+    private FollowUserResponseDTO mappedFollowUserResponseDTO(
+            User user,
+            Map<Long, FollowSendRequest> myPendingRequest,
+            Map<Long ,FollowSendRequest> getMyFollowersRequests
+    ){
+        FollowResponseDTO dto = new FollowResponseDTO();
+
+        FollowSendRequest myFollow = myPendingRequest.get(user.getId());
+        FollowSendRequest follower = getMyFollowersRequests.get(user.getId());
+
+        boolean myFollower = follower != null;
+        boolean myFollowOrPending = myFollow != null;
+
+        if(myFollowOrPending){
+            return mapper.toFollowUserResponseDTO(
+                    user,
+                    myFollow,
+                    myFollower,
+                    myFollowOrPending
+            );
+        }
+
+        return mapper.toFollowUserResponseDTO(
+                user,
+                follower,
+                myFollower,
+                myFollowOrPending
+        );
+    }
+
+
+    private List<FollowUserResponseDTO> lastModified(List<User> userList, Long id){
+        Map<Long, FollowSendRequest> myPendingRequest = myPendingRequest(
+                userList,
+                id
+        );
+
+        Map<Long, FollowSendRequest> myFollowRequest = getMyFollowersRequests(
+                userList,
+                id
+        );
+
+        return userList
+                .stream().map(user -> {
+                    return mappedFollowUserResponseDTO(
+                            user,
+                            myPendingRequest,
+                            myFollowRequest
+                    );
+                })
+                .toList();
     }
 
 

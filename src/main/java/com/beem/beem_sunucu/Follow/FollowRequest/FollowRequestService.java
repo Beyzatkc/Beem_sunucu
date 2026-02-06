@@ -101,6 +101,27 @@ public class FollowRequestService {
     }
 
     @Transactional
+    public FollowResponseDTO cancelRequest(Long requestId) {
+        FollowSendRequest request = followRequestRepositorty.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Request not found"));
+
+        if (request.getStatus() != FollowRequestStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The request already exists");
+        }
+
+        request.setStatus(FollowRequestStatus.CANCEL);
+        followRequestRepositorty.save(request);
+
+        return new FollowResponseDTO(
+                request.getId(),
+                new SimpleUserDTO(request.getRequester()),
+                new SimpleUserDTO(request.getRequested()),
+                request.getStatus(),
+                request.getDate()
+        );
+    }
+
+    @Transactional
     public List<FollowResponseDTO> getPendingRequests(Long requestedId){
         return followRequestRepositorty.findByRequestedIdAndStatus(requestedId, FollowRequestStatus.PENDING).stream()
                 .map(request -> new FollowResponseDTO(
