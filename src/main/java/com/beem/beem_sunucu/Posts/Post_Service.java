@@ -78,7 +78,26 @@ public class Post_Service {
         Pageable pageable = PageRequest.of(page, size);
         Page<Post_Like> posts_like_page = postofLikeRepo.findPostLikesWithFollowOrder(postId, currentUserId, pageable);
         List<Post_Like> posts_like = posts_like_page.getContent();
-        return posts_like.stream().map(postLike -> new User_Response_DTO(postLike.getUser())).toList();
+        return posts_like.stream()
+                .filter(postLike ->
+                        !postLike.getUser().getId().equals(currentUserId))
+                .map(postLike -> {
+
+            User likedUser = postLike.getUser();
+
+            boolean isFollowing =
+                    followRepository.existsByFollowedIdAndFollowingId(
+                            likedUser.getId(),
+                            currentUserId
+                    );
+            User_Response_DTO userdto=new User_Response_DTO(likedUser);
+            if(isFollowing) {
+                userdto.setFollowing(true);
+            }
+
+            return userdto;
+
+        }).toList();
     }
 
 
