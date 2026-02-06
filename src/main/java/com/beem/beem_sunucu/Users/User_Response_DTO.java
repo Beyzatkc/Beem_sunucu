@@ -12,6 +12,7 @@ public class User_Response_DTO {
     private LocalDateTime Date;
     private String biography;
     private boolean emailVerified;
+    private boolean isFollowing=false;
 
     public User_Response_DTO(User user){
         this.id = user.getId();
@@ -95,5 +96,13 @@ public class User_Response_DTO {
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public boolean isFollowing() {
+        return isFollowing;
+    }
+
+    public void setFollowing(boolean following) {
+        isFollowing = following;
     }
 }

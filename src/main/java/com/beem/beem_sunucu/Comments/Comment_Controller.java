@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -51,18 +53,22 @@ public class Comment_Controller {
     }
 
     @PostMapping("/{commentId}/like")
-    public ResponseEntity<String> toggleLike(
+    public ResponseEntity<Map<String, String>> toggleLike(
             @PathVariable Long commentId
     ) {
+        Map<String, String> message = new HashMap<>();
         Long userId= userService.getCurrentUserId();
         try {
             String result = commentService.toggleLike(commentId,userId);
-            return ResponseEntity.ok(result);
+            message.put("message", result);
+            return ResponseEntity.ok(message);
         } catch (CustomExceptions.AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            message.put("error",e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
         } catch (Exception e) {
+            message.put("error",e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Bir hata oluştu: " + e.getMessage());
+                    .body(message);
         }
     }
 
@@ -87,22 +93,25 @@ public class Comment_Controller {
     }
 
     @DeleteMapping("/{commentId}/deleteComment")
-    public ResponseEntity<String>DeletePost(
+    public ResponseEntity<Map<String, String>>DeletePost(
             @PathVariable Long commentId
     ){
+        Map<String, String> message = new HashMap<>();
         Long userId= userService.getCurrentUserId();
         commentService.removeComment(commentId,userId);
-        return ResponseEntity.ok("Post başarıyla silindi.");
+        message.put("message", "Post başarıyla silindi.");
+        return ResponseEntity.ok(message);
     }
 
     @PutMapping("/{commentId}/updateComment")
-    public ResponseEntity<String> UpdatePost(
-            @Valid
+    public ResponseEntity<Map<String, String>>UpdatePost(
             @PathVariable Long commentId,
-            @RequestBody Comment_DTO_Update commentDtoUpdate
+            @Valid @RequestBody Comment_DTO_Update commentDtoUpdate
     ) {
+        Map<String, String> message = new HashMap<>();
         Long userId= userService.getCurrentUserId();
         commentService.updateComment(commentId,userId,commentDtoUpdate);
-        return ResponseEntity.ok("Post başarıyla güncellendi.");
+        message.put("message", "Post başarıyla güncellendi.");
+        return ResponseEntity.ok(message);
     }
 }
