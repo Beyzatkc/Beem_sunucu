@@ -13,7 +13,7 @@ public class Comment_DTO_Response {
     private int number_of_like;
     private LocalDateTime date;
     private Long parent_yorum_id;
-
+    private boolean isLiked=false;
 
     public Comment_DTO_Response(Comment comment) {
         this.comment_id = comment.getCommentId();
@@ -23,14 +23,6 @@ public class Comment_DTO_Response {
         this.number_of_like = comment.getNumberofLikes();
         this.date = comment.getCommentDate();
         this.parent_yorum_id = comment.getParentYorum() != null ? comment.getParentYorum().getCommentId() : null;
-    }
-
-    public Long getYorum_id() {
-        return comment_id;
-    }
-
-    public void setYorum_id(Long yorum_id) {
-        this.comment_id = yorum_id;
     }
 
     public Long getPost_id() {
@@ -79,5 +71,21 @@ public class Comment_DTO_Response {
 
     public void setParent_yorum_id(Long parent_yorum_id) {
         this.parent_yorum_id = parent_yorum_id;
+    }
+
+    public Long getComment_id() {
+        return comment_id;
+    }
+
+    public void setComment_id(Long comment_id) {
+        this.comment_id = comment_id;
+    }
+
+    public boolean isLiked() {
+        return isLiked;
+    }
+
+    public void setLiked(boolean liked) {
+        isLiked = liked;
     }
 }

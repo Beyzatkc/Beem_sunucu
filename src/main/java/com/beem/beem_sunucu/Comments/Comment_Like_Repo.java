@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface Comment_Like_Repo extends JpaRepository<Comment_Like,Long> {
     Optional<Comment_Like>findByComment_CommentIdAndUser_Id(Long commentId, Long userId);
-
+    boolean existsByComment_CommentIdAndUser_Id(Long commentId, Long userId);
     @Query(
             value = """
         SELECT cl.*

@@ -52,10 +52,17 @@ public class Comment_Service {
     }
 
     @Transactional
-    public List<Comment_DTO_Response>commentsGet(Long postId, int page, int size){
+    public List<Comment_DTO_Response>commentsGet(Long postId,Long currentUserId, int page, int size){
         Page<Comment> comments = commentRepo.findByPost_PostIdAndParentCommentIsNullOrderByCommentDateDesc(postId, PageRequest.of(page, size)
         );
-        return comments.stream().map(comment -> new Comment_DTO_Response(comment)).toList();
+        return comments.stream()
+                .map(comment -> {
+                    Comment_DTO_Response dto = new Comment_DTO_Response(comment);
+                    boolean isLiked = commentLikeRepo.existsByComment_CommentIdAndUser_Id(comment.getCommentId(), currentUserId);
+                    dto.setLiked(isLiked);
+                    return dto;
+                })
+                .toList();
     }
 
     @Transactional
@@ -84,9 +91,16 @@ public class Comment_Service {
     }
 
     @Transactional
-    public List<Comment_DTO_Response>subCommentsGet(Long parentCommentId, int page, int size){
+    public List<Comment_DTO_Response>subCommentsGet(Long parentCommentId,Long currentUserId, int page, int size){
         Page<Comment>comments=commentRepo.findByParentComment_CommentIdOrderByCommentDateDesc(parentCommentId, PageRequest.of(page, size));
-        return comments.stream().map(comment -> new Comment_DTO_Response(comment)).toList();
+        return comments.stream()
+                .map(comment -> {
+                    Comment_DTO_Response dto = new Comment_DTO_Response(comment);
+                    boolean isLiked = commentLikeRepo.existsByComment_CommentIdAndUser_Id(comment.getCommentId(), currentUserId);
+                    dto.setLiked(isLiked);
+                    return dto;
+                })
+                .toList();
     }
 
     @Transactional

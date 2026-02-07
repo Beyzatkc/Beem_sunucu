@@ -40,7 +40,8 @@ public class Comment_Controller {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        return commentService.commentsGet(postId,page,size);
+        Long userId= userService.getCurrentUserId();
+        return commentService.commentsGet(postId,userId,page,size);
     }
 
     @GetMapping("/subCommentsGet")
@@ -49,7 +50,8 @@ public class Comment_Controller {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size
     ){
-        return commentService.subCommentsGet(parentCommentId,page,size);
+        Long userId= userService.getCurrentUserId();
+        return commentService.subCommentsGet(parentCommentId,userId,page,size);
     }
 
     @PostMapping("/{commentId}/like")
