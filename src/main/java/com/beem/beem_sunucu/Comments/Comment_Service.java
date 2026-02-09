@@ -84,10 +84,10 @@ public class Comment_Service {
         reply.setNumberofLikes(0);
         reply.setParentYorum(parentComment);
         reply.setSubComments(new ArrayList<>());
-
         commentRepo.save(reply);
-
-        return new Comment_DTO_Response(reply);
+        Comment_DTO_Response cdto=new Comment_DTO_Response(reply);
+        cdto.setParentCommentUsername(parentComment.getUser().getUsername());
+        return cdto;
     }
 
     @Transactional
@@ -96,6 +96,7 @@ public class Comment_Service {
         return comments.stream()
                 .map(comment -> {
                     Comment_DTO_Response dto = new Comment_DTO_Response(comment);
+                    dto.setParentCommentUsername(comment.getUser().getUsername());
                     boolean isLiked = commentLikeRepo.existsByComment_CommentIdAndUser_Id(comment.getCommentId(), currentUserId);
                     dto.setLiked(isLiked);
                     return dto;

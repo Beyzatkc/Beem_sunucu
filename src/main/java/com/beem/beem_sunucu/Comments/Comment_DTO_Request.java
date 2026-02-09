@@ -3,7 +3,6 @@ package com.beem.beem_sunucu.Comments;
 import jakarta.validation.constraints.NotBlank;
 
 public class Comment_DTO_Request {
-    private Long commentId;
     private Long postId;
     private Long userId;
 
@@ -12,13 +11,6 @@ public class Comment_DTO_Request {
 
     private Long parentCommentId;
 
-    public Long getCommentId() {
-        return commentId;
-    }
-
-    public void setCommentId(Long commentId) {
-        this.commentId = commentId;
-    }
 
     public Long getPostId() {
         return postId;

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public class Comment_DTO_Response {
     private Long comment_id;
+    private String parentCommentUsername;
     private Long post_id;
     private User_Response_DTO userResponseDto;
     private String contents;
@@ -87,5 +88,13 @@ public class Comment_DTO_Response {
 
     public void setLiked(boolean liked) {
         isLiked = liked;
+    }
+
+    public String getParentCommentUsername() {
+        return parentCommentUsername;
+    }
+
+    public void setParentCommentUsername(String parentCommentUsername) {
+        this.parentCommentUsername = parentCommentUsername;
     }
 }
