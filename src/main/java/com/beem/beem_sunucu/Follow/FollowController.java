@@ -29,6 +29,11 @@ public class FollowController {
         userService.securityUser(followDTO.getFollowedId());
         return services.unFollow(followDTO);
     }
+    @PostMapping("/removeFollower")
+    public FollowDTO removeFollower(@RequestBody FollowDTO followDTO){
+        userService.securityUser(followDTO.getFollowingId());
+        return services.removeFollower(followDTO);
+    }
 
     @GetMapping("/userFollowing")
     public List<FollowUserResponseDTO> userFollowing(

@@ -99,6 +99,43 @@ public class FollowServices {
     }
 
     @Transactional
+    public FollowDTO removeFollower(FollowDTO followDTO){
+
+        if(!userRepository.existsById(followDTO.getFollowingId())){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Following User Not Found");
+        }
+        if(!userRepository.existsById(followDTO.getFollowedId())){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Followed User Not Found");
+        }
+        if(followDTO.getFollowingId().equals(followDTO.getFollowedId())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot unfollow yourself");
+        }
+        if(!followRepository.existsByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowedId())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You are not following this user");
+        }
+
+        followDTO.setFollowed(false);
+        Optional<FollowSendRequest> optionalRequest = followRequestRepositorty.findByRequesterIdAndRequestedIdAndStatus(
+                followDTO.getFollowingId(),
+                followDTO.getFollowedId(),
+                FollowRequestStatus.ACCEPTED
+        );
+
+        if (optionalRequest.isPresent()){
+            FollowSendRequest request;
+            request = optionalRequest.get();
+            request.setStatus(FollowRequestStatus.UNFOLLOW);
+            followRequestRepositorty.save(request);
+        }
+
+        followRepository.deleteByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowedId());
+
+        return followDTO;
+    }
+
+
+
+    @Transactional
     public List<FollowUserResponseDTO> userFollowing(Long id, int page, int size){
 
         if(!userRepository.existsById(id)){
