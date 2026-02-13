@@ -55,22 +55,22 @@ public class Comment_Controller {
     }
 
     @PostMapping("/{commentId}/like")
-    public ResponseEntity<Map<String, String>> toggleLike(
-            @PathVariable Long commentId
-    ) {
+    public ResponseEntity<Map<String, String>> toggleLike(@PathVariable Long commentId) {
         Map<String, String> message = new HashMap<>();
-        Long userId= userService.getCurrentUserId();
         try {
-            String result = commentService.toggleLike(commentId,userId);
+            Long userId = userService.getCurrentUserId();
+            String result = commentService.toggleLike(commentId, userId);
             message.put("message", result);
             return ResponseEntity.ok(message);
-        } catch (CustomExceptions.AuthenticationException e) {
-            message.put("error",e.getMessage());
+        } catch (CustomExceptions.NotFoundException e) {
+            message.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        } catch (CustomExceptions.AuthenticationException e) {
+            message.put("error", "Yetkisiz işlem: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(message); // 401
         } catch (Exception e) {
-            message.put("error",e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(message);
+            message.put("error", "Sunucu hatası: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
     }
 
@@ -106,14 +106,11 @@ public class Comment_Controller {
     }
 
     @PutMapping("/{commentId}/updateComment")
-    public ResponseEntity<Map<String, String>>UpdatePost(
+    public Comment_DTO_Response UpdatePost(
             @PathVariable Long commentId,
             @Valid @RequestBody Comment_DTO_Update commentDtoUpdate
     ) {
-        Map<String, String> message = new HashMap<>();
         Long userId= userService.getCurrentUserId();
-        commentService.updateComment(commentId,userId,commentDtoUpdate);
-        message.put("message", "Post başarıyla güncellendi.");
-        return ResponseEntity.ok(message);
+        return commentService.updateComment(commentId,userId,commentDtoUpdate);
     }
 }

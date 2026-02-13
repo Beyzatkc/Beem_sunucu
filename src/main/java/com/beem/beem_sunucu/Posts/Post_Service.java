@@ -79,8 +79,6 @@ public class Post_Service {
         Page<Post_Like> posts_like_page = postofLikeRepo.findPostLikesWithFollowOrder(postId, currentUserId, pageable);
         List<Post_Like> posts_like = posts_like_page.getContent();
         return posts_like.stream()
-                .filter(postLike ->
-                        !postLike.getUser().getId().equals(currentUserId))
                 .map(postLike -> {
 
             User likedUser = postLike.getUser();

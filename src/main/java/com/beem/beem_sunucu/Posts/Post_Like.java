@@ -2,6 +2,8 @@ package com.beem.beem_sunucu.Posts;
 
 import com.beem.beem_sunucu.Users.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name="postLikes",uniqueConstraints = {@UniqueConstraint(columnNames = {"post_id", "user_id"})})
@@ -11,8 +13,9 @@ public class Post_Like {
     @Column(name="post_likes_id")
     private Long postLikesId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)

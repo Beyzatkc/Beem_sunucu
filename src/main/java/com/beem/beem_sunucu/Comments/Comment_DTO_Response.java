@@ -4,26 +4,33 @@ import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Comment_DTO_Response {
     private Long comment_id;
     private String parentCommentUsername;
     private Long post_id;
-    private User_Response_DTO userResponseDto;
+    private User_Response_DTO user;
     private String contents;
     private int number_of_like;
     private LocalDateTime date;
-    private Long parent_yorum_id;
+    private LocalDateTime updateDate;
+    private Long parentCommentId;
     private boolean isLiked=false;
+    private boolean isEdited=false;
+
+    private List<Comment_DTO_Response> replies = new ArrayList<>();
+    private boolean isRepliesVisible;
 
     public Comment_DTO_Response(Comment comment) {
         this.comment_id = comment.getCommentId();
         this.post_id = comment.getPost().getPostId();
-        this.userResponseDto = new User_Response_DTO(comment.getUser());
+        this.user = new User_Response_DTO(comment.getUser());
         this.contents = comment.getContents();
         this.number_of_like = comment.getNumberofLikes();
         this.date = comment.getCommentDate();
-        this.parent_yorum_id = comment.getParentYorum() != null ? comment.getParentYorum().getCommentId() : null;
+        this.parentCommentId = comment.getParentYorum() != null ? comment.getParentYorum().getCommentId() : null;
     }
 
     public Long getPost_id() {
@@ -34,12 +41,12 @@ public class Comment_DTO_Response {
         this.post_id = post_id;
     }
 
-    public User_Response_DTO getUserResponseDto() {
-        return userResponseDto;
+    public User_Response_DTO getUser() {
+        return user;
     }
 
-    public void setUserResponseDto(User_Response_DTO userResponseDto) {
-        this.userResponseDto = userResponseDto;
+    public void setUser(User_Response_DTO user) {
+        this.user = user;
     }
 
     public String getContents() {
@@ -66,12 +73,12 @@ public class Comment_DTO_Response {
         this.date = date;
     }
 
-    public Long getParent_yorum_id() {
-        return parent_yorum_id;
+    public Long getParentCommentId() {
+        return parentCommentId;
     }
 
-    public void setParent_yorum_id(Long parent_yorum_id) {
-        this.parent_yorum_id = parent_yorum_id;
+    public void setParentCommentId(Long parentCommentId) {
+        this.parentCommentId = parentCommentId;
     }
 
     public Long getComment_id() {
@@ -96,5 +103,37 @@ public class Comment_DTO_Response {
 
     public void setParentCommentUsername(String parentCommentUsername) {
         this.parentCommentUsername = parentCommentUsername;
+    }
+
+    public List<Comment_DTO_Response> getReplies() {
+        return replies;
+    }
+
+    public void setReplies(List<Comment_DTO_Response> replies) {
+        this.replies = replies;
+    }
+
+    public boolean isRepliesVisible() {
+        return isRepliesVisible;
+    }
+
+    public void setRepliesVisible(boolean repliesVisible) {
+        isRepliesVisible = repliesVisible;
+    }
+
+    public boolean isEdited() {
+        return isEdited;
+    }
+
+    public void setEdited(boolean edited) {
+        isEdited = edited;
+    }
+
+    public LocalDateTime getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(LocalDateTime updateDate) {
+        this.updateDate = updateDate;
     }
 }

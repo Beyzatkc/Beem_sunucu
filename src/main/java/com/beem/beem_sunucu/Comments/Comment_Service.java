@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class Comment_Service {
@@ -55,14 +57,29 @@ public class Comment_Service {
     public List<Comment_DTO_Response>commentsGet(Long postId,Long currentUserId, int page, int size){
         Page<Comment> comments = commentRepo.findByPost_PostIdAndParentCommentIsNullOrderByCommentDateDesc(postId, PageRequest.of(page, size)
         );
-        return comments.stream()
+        List<Long> commentIds = comments.getContent().stream()
+                .map(Comment::getCommentId)
+                .collect(Collectors.toList());
+
+        Set<Long> likedCommentIds = commentLikeRepo.findByComment_CommentIdInAndUser_Id(commentIds, currentUserId)
+                .stream()
+                .map(cl -> cl.getComment().getCommentId())
+                .collect(Collectors.toSet());
+
+        return comments.getContent().stream()
                 .map(comment -> {
                     Comment_DTO_Response dto = new Comment_DTO_Response(comment);
-                    boolean isLiked = commentLikeRepo.existsByComment_CommentIdAndUser_Id(comment.getCommentId(), currentUserId);
-                    dto.setLiked(isLiked);
+                    dto.setLiked(likedCommentIds.contains(comment.getCommentId()));
+                    if (comment.getUpdateDate() != null) {
+                        dto.setEdited(true);
+                        dto.setUpdateDate(comment.getUpdateDate());
+                    } else {
+                        dto.setEdited(false);
+                    }
                     return dto;
                 })
                 .toList();
+
     }
 
     @Transactional
@@ -91,45 +108,58 @@ public class Comment_Service {
     }
 
     @Transactional
-    public List<Comment_DTO_Response>subCommentsGet(Long parentCommentId,Long currentUserId, int page, int size){
-        Page<Comment>comments=commentRepo.findByParentComment_CommentIdOrderByCommentDateDesc(parentCommentId, PageRequest.of(page, size));
-        return comments.stream()
+    public List<Comment_DTO_Response> subCommentsGet(Long parentCommentId, Long currentUserId, int page, int size) {
+        Page<Comment> comments = commentRepo.findByParentComment_CommentIdOrderByCommentDateDesc(
+                parentCommentId,
+                PageRequest.of(page, size)
+        );
+
+        List<Comment> commentList = comments.getContent();
+        List<Long> commentIds = commentList.stream()
+                .map(Comment::getCommentId)
+                .toList();
+
+        Set<Long> likedCommentIds = commentLikeRepo.findByComment_CommentIdInAndUser_Id(commentIds, currentUserId)
+                .stream()
+                .map(cl -> cl.getComment().getCommentId())
+                .collect(Collectors.toSet());
+
+        return commentList.stream()
                 .map(comment -> {
                     Comment_DTO_Response dto = new Comment_DTO_Response(comment);
                     dto.setParentCommentUsername(comment.getUser().getUsername());
-                    boolean isLiked = commentLikeRepo.existsByComment_CommentIdAndUser_Id(comment.getCommentId(), currentUserId);
-                    dto.setLiked(isLiked);
+                    dto.setLiked(likedCommentIds.contains(comment.getCommentId())); // performanslı like check
                     return dto;
                 })
                 .toList();
     }
 
     @Transactional
-    public String toggleLike(Long commentId,Long userId){
-       Comment comment=commentRepo.findById(commentId)
-               .orElseThrow(() -> new CustomExceptions.AuthenticationException("Yorum bulunamadı"));
-       User user=userRepo.findById(userId)
-               .orElseThrow(() -> new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı"));
-       Optional<Comment_Like>existingLike=commentLikeRepo.findByComment_CommentIdAndUser_Id(commentId,userId);
-       if(existingLike.isPresent()){
-           commentLikeRepo.delete(existingLike.get());
+    public String toggleLike(Long commentId, Long userId) {
+        Comment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new CustomExceptions.AuthenticationException("Yorum bulunamadı"));
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı"));
 
-           int newCount = Math.max(0, comment.getNumberofLikes() - 1);
-           commentRepo.updateLikeCount(commentId, newCount);
+        Optional<Comment_Like> existingLike = commentLikeRepo.findByComment_CommentIdAndUser_Id(commentId, userId);
 
-           return "Beğeni kaldırıldı";
-       }else{
-           Comment_Like commentLike=new Comment_Like();
-           commentLike.setComment(comment);
-           commentLike.setUser(user);
-           commentLikeRepo.saveAndFlush(commentLike);
+        if (existingLike.isPresent()) {
+            commentLikeRepo.delete(existingLike.get());
+            comment.setNumberofLikes(Math.max(0, comment.getNumberofLikes() - 1));
+            commentRepo.saveAndFlush(comment);
+            return "Beğeni kaldırıldı";
+        } else {
+            Comment_Like commentLike = new Comment_Like();
+            commentLike.setComment(comment);
+            commentLike.setUser(user);
+            commentLikeRepo.save(commentLike); // Önce like kaydı
 
-           int newCount = comment.getNumberofLikes() + 1;
-           commentRepo.updateLikeCount(commentId, newCount);
+            comment.setNumberofLikes(comment.getNumberofLikes() + 1);
 
-           return "Yorum beğenildi";
-       }
-
+            // ÖNEMLİ: Manuel olarak kaydetmeyi zorla
+            commentRepo.saveAndFlush(comment);
+            return "Yorum beğenildi";
+        }
     }
     @Transactional
     public List<User_Response_DTO> users_who_like(Long commentId, Long currentUserId, int page, int size) {
@@ -153,7 +183,7 @@ public class Comment_Service {
     }
 
     @Transactional
-    public void updateComment(Long commentId,Long userId,Comment_DTO_Update commentDtoUpdate){
+    public Comment_DTO_Response updateComment(Long commentId,Long userId,Comment_DTO_Update commentDtoUpdate){
         Comment comment=commentRepo.findById(commentId)
                 .orElseThrow(() -> new CustomExceptions.NotFoundException("Yorum bulunamadı."));
         if(userId==null){
@@ -162,9 +192,13 @@ public class Comment_Service {
         if(!comment.getUser().getId().equals(userId)){
             throw new CustomExceptions.NotFoundException("Bu yorumu güncelleme yetkiniz yok.");
         }
-        comment.setContents(commentDtoUpdate.getContents());
-        comment.setCommentDate(LocalDateTime.now());
+        comment.setContents(commentDtoUpdate.getContents().trim());
+        comment.setUpdateDate(LocalDateTime.now());
         commentRepo.save(comment);
+        Comment_DTO_Response dto=new Comment_DTO_Response(comment);
+        dto.setEdited(true);
+        dto.setUpdateDate(comment.getUpdateDate());
+        return dto;
     }
 }
 

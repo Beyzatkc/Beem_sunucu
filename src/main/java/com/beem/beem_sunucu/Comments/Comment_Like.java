@@ -3,9 +3,16 @@ package com.beem.beem_sunucu.Comments;
 import com.beem.beem_sunucu.Posts.Post;
 import com.beem.beem_sunucu.Users.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "commentLike",uniqueConstraints = {@UniqueConstraint(columnNames = {"post_id", "user_id"})})
+@Table(
+        name = "comment_likes",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"comment_id", "user_id"})
+        }
+)
 public class Comment_Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,6 +22,7 @@ public class Comment_Like {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Comment comment;
 
     @ManyToOne(fetch = FetchType.LAZY)
