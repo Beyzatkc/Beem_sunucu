@@ -11,6 +11,7 @@ public class Comment_DTO_Response {
     private Long comment_id;
     private String parentCommentUsername;
     private Long post_id;
+    private Long postUserId;
     private User_Response_DTO user;
     private String contents;
     private int number_of_like;
@@ -19,19 +20,38 @@ public class Comment_DTO_Response {
     private Long parentCommentId;
     private boolean isLiked=false;
     private boolean isEdited=false;
+    private boolean isPinned=false;
 
     private List<Comment_DTO_Response> replies = new ArrayList<>();
     private boolean isRepliesVisible;
 
-    public Comment_DTO_Response(Comment comment) {
-        this.comment_id = comment.getCommentId();
-        this.post_id = comment.getPost().getPostId();
-        this.user = new User_Response_DTO(comment.getUser());
-        this.contents = comment.getContents();
-        this.number_of_like = comment.getNumberofLikes();
-        this.date = comment.getCommentDate();
-        this.parentCommentId = comment.getParentYorum() != null ? comment.getParentYorum().getCommentId() : null;
+    public Comment_DTO_Response(
+            Long commentId,
+            Long postId,
+            Long postUserId,
+            Long userId,
+            String username,
+            String contents,
+            int numberOfLike,
+            LocalDateTime commentDate,
+            LocalDateTime updateDate,
+            Long parentCommentId,
+            Boolean pinned
+    ) {
+        this.comment_id = commentId;
+        this.post_id = postId;
+        this.postUserId = postUserId;
+        this.user = new User_Response_DTO(userId, username);
+        this.contents = contents;
+        this.number_of_like = numberOfLike;
+        this.date = commentDate;
+        this.updateDate = updateDate;
+        this.parentCommentId = parentCommentId;
+        this.isEdited = updateDate != null;
+        this.isPinned = Boolean.TRUE.equals(pinned);
     }
+
+
 
     public Long getPost_id() {
         return post_id;
@@ -135,5 +155,21 @@ public class Comment_DTO_Response {
 
     public void setUpdateDate(LocalDateTime updateDate) {
         this.updateDate = updateDate;
+    }
+
+    public boolean isPinned() {
+        return isPinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        isPinned = pinned;
+    }
+
+    public Long getPostUserId() {
+        return postUserId;
+    }
+
+    public void setPostUserId(Long postUserId) {
+        this.postUserId = postUserId;
     }
 }

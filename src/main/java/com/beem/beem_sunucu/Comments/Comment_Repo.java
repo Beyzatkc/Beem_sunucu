@@ -9,7 +9,42 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface Comment_Repo extends JpaRepository<Comment,Long> {
-    Page<Comment>findByPost_PostIdAndParentCommentIsNullOrderByCommentDateDesc(Long postId, Pageable pageable);
+    @Query(
+            value = """
+        SELECT new com.beem.beem_sunucu.Comments.Comment_DTO_Response(
+            c.commentId,
+            p.postId,
+            p.user.id,
+            u.id,
+            u.username,
+            c.contents,
+            c.numberofLikes,
+            c.commentDate,
+            c.updateDate,
+            parent.commentId,
+            c.isPinned
+        )
+        FROM Comment c
+        JOIN c.post p
+        JOIN c.user u
+        LEFT JOIN c.parentComment parent
+        WHERE p.postId = :postId
+        AND c.parentComment IS NULL
+        ORDER BY c.isPinned DESC, c.commentDate DESC
+    """,
+            countQuery = """
+        SELECT COUNT(c)
+        FROM Comment c
+        WHERE c.post.postId = :postId
+        AND c.parentComment IS NULL
+    """
+    )
+    Page<Comment_DTO_Response> findMainComments(
+            @Param("postId") Long postId,
+            Pageable pageable
+    );
+
+
     Page<Comment>findByParentComment_CommentIdOrderByCommentDateDesc(Long parentCommentId,Pageable pageable);
 
     @Transactional

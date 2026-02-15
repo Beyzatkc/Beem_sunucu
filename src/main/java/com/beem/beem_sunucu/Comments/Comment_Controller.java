@@ -113,4 +113,13 @@ public class Comment_Controller {
         Long userId= userService.getCurrentUserId();
         return commentService.updateComment(commentId,userId,commentDtoUpdate);
     }
+
+    @PatchMapping("/{commentId}/pin")
+    public Comment_DTO_Response pinComment(
+            @PathVariable Long commentId
+    ) {
+        Long userId= userService.getCurrentUserId();
+
+        return commentService.pinComment(commentId, userId);
+    }
 }

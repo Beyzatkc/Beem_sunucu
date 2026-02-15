@@ -44,6 +44,9 @@ public class Comment {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Comment parentComment;
 
+    @Column(name = "is_pinned")
+    private Boolean isPinned;
+
     @OneToMany(mappedBy = "parentComment", orphanRemoval = true)
     private List<Comment> subComments = new ArrayList<>();
 
@@ -124,5 +127,13 @@ public class Comment {
 
     public void setSubComments(List<Comment> subComments) {
         this.subComments = subComments;
+    }
+
+    public Boolean getPinned() {
+        return isPinned;
+    }
+
+    public void setPinned(Boolean pinned) {
+        isPinned = pinned;
     }
 }
