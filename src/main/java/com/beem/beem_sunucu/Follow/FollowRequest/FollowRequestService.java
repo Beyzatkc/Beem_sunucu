@@ -64,7 +64,6 @@ public class FollowRequestService {
 
         request.setStatus(FollowRequestStatus.ACCEPTED);
         followRequestRepositorty.save(request);
-        followRepository.save(new Follow(request));
 
         return flowFollowRequest(request, false);
     }

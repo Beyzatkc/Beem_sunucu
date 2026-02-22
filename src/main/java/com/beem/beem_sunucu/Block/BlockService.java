@@ -77,7 +77,7 @@ public class BlockService {
                 .ifPresent(request -> {
                     request.setStatus(FollowRequestStatus.BLOCKED);
                     followRequestRepo.save(request);
-                    followRepo.deleteByFollowedIdAndFollowingId(targetId, id);
+                    followRepo.deleteByFollowerIdAndFollowingId(id, targetId);
                 });
     }
 }

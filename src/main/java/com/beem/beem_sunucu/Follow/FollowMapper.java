@@ -38,4 +38,20 @@ public class FollowMapper {
 
         return new SimpleUserDTO(user);
     }
+
+    public FollowResponse toFollowResponse(User user, FollowUserView view){
+        return new FollowResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getBiography(),
+                user.getProfile(),
+                integerToBoolean(view.getIsFollower()),
+                integerToBoolean(view.getIsFollowing()),
+                integerToBoolean(view.getIsPending())
+        );
+    }
+
+    private boolean integerToBoolean(Integer value){
+        return value != null && value == 1;
+    }
 }

@@ -20,7 +20,7 @@ public interface User_Repo extends JpaRepository<User,Long> {
     Page<User> findAllByIdIn(List<Long> ids, Pageable pageable);
 
     @Query("SELECT u.privateProfile FROM User u WHERE u.id = :userId")
-    Boolean findPrivateProfileByUserId(@Param("userId") Long userId);
+    Optional<Boolean> findPrivateProfileByUserId(@Param("userId") Long userId);
 
     List<User> findAllByIdIn(List<Long> ids);
 }

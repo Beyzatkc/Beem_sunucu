@@ -6,7 +6,6 @@ import com.beem.beem_sunucu.Block.BlockRepository;
 import com.beem.beem_sunucu.Block.BlockResponseDTO;
 import com.beem.beem_sunucu.Follow.FollowRepository;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestService;
-import com.beem.beem_sunucu.Posts.Post;
 import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Posts.Post_Repo;
 import com.beem.beem_sunucu.Users.User;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -62,8 +60,8 @@ public class ProfileService {
 
         return new ProfileResponse(
                 new User_Response_DTO(user),
+                followRepository.countByFollowerId(myid),
                 followRepository.countByFollowingId(myid),
-                followRepository.countByFollowedId(myid),
                 postRepo.findByUser_Id(myid, pageable).map(Post_DTO_Response::new),
                 true,
                 false,
@@ -88,15 +86,15 @@ public class ProfileService {
             return ResponseEntity.ok(new BlockResponseDTO(targetBlock.get()));
         }
 
-        boolean isFollowing = followRepository.existsByFollowedIdAndFollowingId(targetId, myId);
-        boolean isFollower = followRepository.existsByFollowedIdAndFollowingId(myId, targetId);
+        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, targetId);
+        boolean isFollower = followRepository.existsByFollowerIdAndFollowingId(targetId, myId);
 
         boolean isPending = false;
         if(!isFollowing)
             isPending = requestService.isFollowing(myId, targetId);
 
         Long followedCount = followRepository.countByFollowingId(targetId);
-        Long followerCount = followRepository.countByFollowedId(targetId);
+        Long followerCount = followRepository.countByFollowerId(targetId);
 
 
         User_Response_DTO targetUserDto = new User_Response_DTO(user);
