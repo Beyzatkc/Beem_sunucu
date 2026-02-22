@@ -45,7 +45,7 @@ public class Comment {
     private Comment parentComment;
 
     @Column(name = "is_pinned")
-    private Boolean isPinned;
+    private Boolean isPinned = false;
 
     @OneToMany(mappedBy = "parentComment", orphanRemoval = true)
     private List<Comment> subComments = new ArrayList<>();

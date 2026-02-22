@@ -35,43 +35,44 @@ public class Comment_Controller {
     }
 
     @GetMapping("/commentsGet")
-    public List<Comment_DTO_Response>commentsGet(
+    public ResponseEntity<List<Comment_DTO_Response>> commentsGet(
             @RequestParam Long postId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
         Long userId= userService.getCurrentUserId();
-        return commentService.commentsGet(postId,userId,page,size);
+
+        Long pinnedCount= commentService.CountPinned(postId);
+        List<Comment_DTO_Response>comments=commentService.commentsGet(postId,userId,page,size);
+        return ResponseEntity.ok()
+                .header("X-Pinned-Count", String.valueOf(pinnedCount))
+                .body(comments);
     }
 
     @GetMapping("/subCommentsGet")
-    public List<Comment_DTO_Response>subCommentsGet(
+    public ResponseEntity<List<Comment_DTO_Response>>subCommentsGet(
             @RequestParam Long parentCommentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size
     ){
         Long userId= userService.getCurrentUserId();
-        return commentService.subCommentsGet(parentCommentId,userId,page,size);
+
+        Long pinnedCount= commentService.CountSubcomments(parentCommentId);
+        List<Comment_DTO_Response>comments= commentService.subCommentsGet(parentCommentId,userId,page,size);
+
+        return ResponseEntity.ok()
+                .header("X-Subcomments-Count", String.valueOf(pinnedCount))
+                .body(comments);
     }
 
     @PostMapping("/{commentId}/like")
-    public ResponseEntity<Map<String, String>> toggleLike(@PathVariable Long commentId) {
-        Map<String, String> message = new HashMap<>();
-        try {
-            Long userId = userService.getCurrentUserId();
-            String result = commentService.toggleLike(commentId, userId);
-            message.put("message", result);
-            return ResponseEntity.ok(message);
-        } catch (CustomExceptions.NotFoundException e) {
-            message.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        } catch (CustomExceptions.AuthenticationException e) {
-            message.put("error", "Yetkisiz işlem: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(message); // 401
-        } catch (Exception e) {
-            message.put("error", "Sunucu hatası: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
-        }
+    public ResponseEntity<Comment_DTO_Response> toggleLike(@PathVariable Long commentId) {
+
+        Long userId = userService.getCurrentUserId();
+        Comment_DTO_Response response =
+                commentService.toggleLike(commentId, userId);
+
+        return ResponseEntity.ok(response);
     }
 
     @Transactional
@@ -121,5 +122,14 @@ public class Comment_Controller {
         Long userId= userService.getCurrentUserId();
 
         return commentService.pinComment(commentId, userId);
+    }
+
+    @PatchMapping("/{commentId}/removePin")
+    public Comment_DTO_Response pinDelete(
+            @PathVariable Long commentId
+    ) {
+        Long userId= userService.getCurrentUserId();
+
+        return commentService.removePin(commentId, userId);
     }
 }

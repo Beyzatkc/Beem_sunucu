@@ -22,9 +22,6 @@ public class Comment_DTO_Response {
     private boolean isEdited=false;
     private boolean isPinned=false;
 
-    private List<Comment_DTO_Response> replies = new ArrayList<>();
-    private boolean isRepliesVisible;
-
     public Comment_DTO_Response(
             Long commentId,
             Long postId,
@@ -125,21 +122,6 @@ public class Comment_DTO_Response {
         this.parentCommentUsername = parentCommentUsername;
     }
 
-    public List<Comment_DTO_Response> getReplies() {
-        return replies;
-    }
-
-    public void setReplies(List<Comment_DTO_Response> replies) {
-        this.replies = replies;
-    }
-
-    public boolean isRepliesVisible() {
-        return isRepliesVisible;
-    }
-
-    public void setRepliesVisible(boolean repliesVisible) {
-        isRepliesVisible = repliesVisible;
-    }
 
     public boolean isEdited() {
         return isEdited;
@@ -172,4 +154,5 @@ public class Comment_DTO_Response {
     public void setPostUserId(Long postUserId) {
         this.postUserId = postUserId;
     }
+
 }
