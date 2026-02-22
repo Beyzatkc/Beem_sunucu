@@ -20,13 +20,13 @@ public class FollowController {
 
     @PostMapping("/follow")
     public FollowDTO createFollow(@RequestBody FollowDTO followDTO){
-        userService.securityUser(followDTO.getFollowedId());
+        userService.securityUser(followDTO.getFollowingId());
         return services.createFollow(followDTO);
     }
 
     @PostMapping("/unfollow")
     public FollowDTO unFollow(@RequestBody FollowDTO followDTO){
-        userService.securityUser(followDTO.getFollowedId());
+        userService.securityUser(followDTO.getFollowingId());
         return services.unFollow(followDTO);
     }
     @PostMapping("/removeFollower")
@@ -68,5 +68,6 @@ public class FollowController {
         Long myid = userService.getCurrentUserId();
         return services.otherUserFollowed(myid,targetid,page,size);
     }
+
 
 }

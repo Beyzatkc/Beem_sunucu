@@ -1,6 +1,7 @@
 package com.beem.beem_sunucu.Follow.FollowRequest;
 
 
+import com.beem.beem_sunucu.Follow.TestUsersDTO;
 import com.beem.beem_sunucu.Users.User_service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -51,5 +52,15 @@ public class FollowRequestController {
     public List<FollowResponseDTO> getSentRequests() {
         Long requesterId = userService.getCurrentUserId();
         return service.getSentRequests(requesterId);
+    }
+
+    @PostMapping("/test/follow")
+    public void followTestUser(@RequestBody TestUsersDTO dto){
+        for(Long userId: dto.getUserIds()){
+            FollowRequestDTO requestDTO = new FollowRequestDTO();
+            requestDTO.setRequesterId(userId);
+            requestDTO.setRequestedId(dto.getTargetId());
+            service.sendRequest(requestDTO);
+        }
     }
 }

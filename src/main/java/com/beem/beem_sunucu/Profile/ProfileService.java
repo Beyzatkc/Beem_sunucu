@@ -5,6 +5,7 @@ import com.beem.beem_sunucu.Block.Block;
 import com.beem.beem_sunucu.Block.BlockRepository;
 import com.beem.beem_sunucu.Block.BlockResponseDTO;
 import com.beem.beem_sunucu.Follow.FollowRepository;
+import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestService;
 import com.beem.beem_sunucu.Posts.Post;
 import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Posts.Post_Repo;
@@ -28,6 +29,7 @@ import java.util.Optional;
 public class ProfileService {
 
     private final FollowRepository followRepository;
+    private final FollowRequestService requestService;
     private final User_Repo userRepo;
     private final Post_Repo postRepo;
     private final BlockRepository blockRepository;
@@ -35,11 +37,13 @@ public class ProfileService {
     @Autowired
     public ProfileService(
             FollowRepository followRepository,
+            FollowRequestService requestService,
             User_Repo userRepo,
             Post_Repo postRepo,
             BlockRepository blockRepository
     ){
         this.followRepository = followRepository;
+        this.requestService = requestService;
         this.userRepo = userRepo;
         this.postRepo = postRepo;
         this.blockRepository = blockRepository;
@@ -64,7 +68,8 @@ public class ProfileService {
                 true,
                 false,
                 false,
-                postRepo.countByUser_Id(myid)
+                postRepo.countByUser_Id(myid),
+                false
         );
     }
 
@@ -85,6 +90,10 @@ public class ProfileService {
 
         boolean isFollowing = followRepository.existsByFollowedIdAndFollowingId(targetId, myId);
         boolean isFollower = followRepository.existsByFollowedIdAndFollowingId(myId, targetId);
+
+        boolean isPending = false;
+        if(!isFollowing)
+            isPending = requestService.isFollowing(myId, targetId);
 
         Long followedCount = followRepository.countByFollowingId(targetId);
         Long followerCount = followRepository.countByFollowedId(targetId);
@@ -110,7 +119,8 @@ public class ProfileService {
                 false,
                 isFollowing,
                 isFollower,
-                postCount
+                postCount,
+                isPending
         ));
     }
 

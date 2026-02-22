@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class FollowMapper {
 
-    public FollowResponseDTO toFollowResponseDTO(FollowSendRequest entity) {
+    public FollowResponseDTO toFollowResponseDTO(
+            FollowSendRequest entity, boolean isMyFollower, boolean isFollowingYou
+    ) {
         if (entity == null) return null;
 
         FollowResponseDTO dto = new FollowResponseDTO();
@@ -18,6 +20,8 @@ public class FollowMapper {
         dto.setRequested(toSimpleUserDTO(entity.getRequested()));
         dto.setStatus(entity.getStatus());
         dto.setDate(entity.getDate());
+        dto.setMyFollower(isMyFollower);
+        dto.setFollowingYou(isFollowingYou);
 
         return dto;
     }
@@ -25,9 +29,7 @@ public class FollowMapper {
     public FollowUserResponseDTO toFollowUserResponseDTO(User user, FollowSendRequest entity, boolean isMyFollower, boolean isFollowingYou){
         return new FollowUserResponseDTO(
                 user,
-                this.toFollowResponseDTO(entity),
-                isMyFollower,
-                isFollowingYou
+                this.toFollowResponseDTO(entity, isMyFollower, isFollowingYou)
         );
     }
 

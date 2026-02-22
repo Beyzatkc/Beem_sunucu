@@ -9,20 +9,16 @@ public class FollowUserResponseDTO {
     private String profile;
     private String biography;
     private FollowResponseDTO followInfo;
-    private boolean isMyFollower;
-    private boolean isFollowingYou;
 
     public FollowUserResponseDTO(){
     }
 
-    public FollowUserResponseDTO(User user, FollowResponseDTO followInfo, boolean isMyFollower, boolean isFollowingYou){
+    public FollowUserResponseDTO(User user, FollowResponseDTO followInfo){
         this.id = user.getId();
         this.username = user.getUsername();
         this.profile = user.getProfile();
         this.biography = user.getBiography();
-        this.followInfo = followInfo;
-        this.isMyFollower = isMyFollower;
-        this.isFollowingYou = isFollowingYou;
+        this.followInfo = followInfo;;
     }
 
 
@@ -66,19 +62,4 @@ public class FollowUserResponseDTO {
         this.followInfo = followInfo;
     }
 
-    public boolean isMyFollower() {
-        return isMyFollower;
-    }
-
-    public void setMyFollower(boolean myFollower) {
-        isMyFollower = myFollower;
-    }
-
-    public boolean isFollowingYou() {
-        return isFollowingYou;
-    }
-
-    public void setFollowingYou(boolean followingYou) {
-        isFollowingYou = followingYou;
-    }
 }

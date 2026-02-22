@@ -30,6 +30,20 @@ public interface FollowRequestRepositorty extends JpaRepository<FollowSendReques
     );
 
     @Query(value = """
+        SELECT COUNT(*)
+        FROM followrequests
+        WHERE requester_id = :requesterId
+          AND requested_id = :requestedId
+          AND status IN ('PENDING', 'ACCEPTED')
+        """,
+            nativeQuery = true
+    )
+    Long isFollowingRaw(
+            @Param("requesterId") Long requesterId,
+            @Param("requestedId") Long requestedId
+    );
+
+    @Query(value = """
     SELECT *
     FROM followrequests
     WHERE requester_id = :requesterId

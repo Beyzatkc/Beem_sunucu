@@ -5,7 +5,7 @@ import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestStatus;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowResponseDTO;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowSendRequest;
 import com.beem.beem_sunucu.Users.User;
-import com.beem.beem_sunucu.Users.User_Repo;
+import com.beem.beem_sunucu.Users.User_service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,40 +24,41 @@ import java.util.stream.Collectors;
 public class FollowServices {
 
     private final FollowRepository followRepository;
-    private final User_Repo userRepository;
+    private final User_service userService;
     private final FollowRequestRepositorty followRequestRepositorty;
     private final FollowMapper mapper;
 
     @Autowired
     public FollowServices(
-            FollowRepository followRepository,
-            User_Repo userRepository,
+            FollowRepository followRepository, User_service userService,
             FollowRequestRepositorty followRequestRepositorty, FollowMapper mapper
     ){
         this.followRepository = followRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.followRequestRepositorty = followRequestRepositorty;
         this.mapper = mapper;
     }
 
     @Transactional
     public FollowDTO createFollow(FollowDTO followDTO){
-        if(!userRepository.existsById(followDTO.getFollowingId())){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Following User Not Found");
-        }
-        if(!userRepository.existsById(followDTO.getFollowedId())){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Followed User Not Found");
-        }
-        if(followRepository.existsByFollowedIdAndFollowingId(followDTO.getFollowedId(), followDTO.getFollowingId())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Following this user");
-        }
-        if(followDTO.getFollowingId().equals(followDTO.getFollowedId())){
+        userService.existByUser(
+                followDTO.getFollowerId()
+        );
+        userService.existByUser(
+                followDTO.getFollowingId()
+        );
+
+        alreadyExistsFollow(followDTO);
+
+        if(followDTO.getFollowerId().equals(followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot follow yourself");
         }
 
+
+
         followDTO.setFollowed(true);
         Follow follow = new Follow();
-        follow.setFollowedId(followDTO.getFollowedId());
+        follow.setFollowerId(followDTO.getFollowerId());
         follow.setFollowingId(followDTO.getFollowingId());
         followRepository.save(follow);
         return followDTO;
@@ -69,20 +70,20 @@ public class FollowServices {
         if(!userRepository.existsById(followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Following User Not Found");
         }
-        if(!userRepository.existsById(followDTO.getFollowedId())){
+        if(!userRepository.existsById(followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Followed User Not Found");
         }
-        if(followDTO.getFollowingId().equals(followDTO.getFollowedId())){
+        if(followDTO.getFollowingId().equals(followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot unfollow yourself");
         }
-        if(!followRepository.existsByFollowedIdAndFollowingId(followDTO.getFollowedId(), followDTO.getFollowingId())){
+        if(!followRepository.existsByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You are not following this user");
         }
 
         followDTO.setFollowed(false);
         Optional<FollowSendRequest> optionalRequest = followRequestRepositorty.findByRequesterIdAndRequestedIdAndStatus(
                 followDTO.getFollowingId(),
-                followDTO.getFollowedId(),
+                followDTO.getFollowingId(),
                 FollowRequestStatus.ACCEPTED
         );
 
@@ -93,7 +94,7 @@ public class FollowServices {
             followRequestRepositorty.save(request);
         }
 
-        followRepository.deleteByFollowedIdAndFollowingId(followDTO.getFollowedId(), followDTO.getFollowingId());
+        followRepository.deleteByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowingId());
 
         return followDTO;
     }
@@ -104,20 +105,20 @@ public class FollowServices {
         if(!userRepository.existsById(followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Following User Not Found");
         }
-        if(!userRepository.existsById(followDTO.getFollowedId())){
+        if(!userRepository.existsById(followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Followed User Not Found");
         }
-        if(followDTO.getFollowingId().equals(followDTO.getFollowedId())){
+        if(followDTO.getFollowingId().equals(followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot unfollow yourself");
         }
-        if(!followRepository.existsByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowedId())){
+        if(!followRepository.existsByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You are not following this user");
         }
 
         followDTO.setFollowed(false);
         Optional<FollowSendRequest> optionalRequest = followRequestRepositorty.findByRequesterIdAndRequestedIdAndStatus(
                 followDTO.getFollowingId(),
-                followDTO.getFollowedId(),
+                followDTO.getFollowingId(),
                 FollowRequestStatus.ACCEPTED
         );
 
@@ -128,7 +129,7 @@ public class FollowServices {
             followRequestRepositorty.save(request);
         }
 
-        followRepository.deleteByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowedId());
+        followRepository.deleteByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowingId());
 
         return followDTO;
     }
@@ -282,7 +283,9 @@ public class FollowServices {
         FollowSendRequest follower = getMyFollowersRequests.get(user.getId());
 
         boolean myFollower = follower != null;
-        boolean myFollowOrPending = myFollow != null;
+        boolean myFollowOrPending = (myFollow != null) &&
+                (myFollow.getStatus() == FollowRequestStatus.PENDING
+                        || myFollow.getStatus() == FollowRequestStatus.ACCEPTED);
 
         if(myFollowOrPending){
             return mapper.toFollowUserResponseDTO(
@@ -322,6 +325,12 @@ public class FollowServices {
                     );
                 })
                 .toList();
+    }
+
+    private void alreadyExistsFollow(FollowDTO followDTO){
+        if(followRepository.existsByFollowerIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowingId())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Following this user");
+        }
     }
 
 

@@ -1,4 +1,5 @@
 package com.beem.beem_sunucu.Users;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -6,6 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -77,6 +79,16 @@ public class User_service implements UserDetailsService {
     public void securityUser(String  name){
         if(!SecurityContextHolder.getContext().getAuthentication().getName().equals(name))
             throw new SecurityException("Yasaklı erişim.");
+    }
+
+    public boolean isPrivateProfile(){
+
+    }
+
+    public void existByUser(Long userId){
+        if(!userRepo.existsById(userId)){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
+        }
     }
 
 }

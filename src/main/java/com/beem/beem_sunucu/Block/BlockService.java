@@ -61,7 +61,7 @@ public class BlockService {
         blockRepository.delete(block);
     }
 
-    public List<BlockResponseDTO> getBlockedUsers(Long blockerId) {
+    protected List<BlockResponseDTO> getBlockedUsers(Long blockerId) {
         return blockRepository.findByBlockerId(blockerId)
                 .stream()
                 .map(block -> new BlockResponseDTO(block))
