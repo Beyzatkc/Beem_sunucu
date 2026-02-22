@@ -1,6 +1,6 @@
 package com.beem.beem_sunucu.Block;
 
-import com.beem.beem_sunucu.Follow.FollowRepository;
+import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestRepositorty;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestStatus;
 import com.beem.beem_sunucu.Users.User;

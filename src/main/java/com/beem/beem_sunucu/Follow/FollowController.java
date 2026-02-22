@@ -20,8 +20,8 @@ public class FollowController {
     }
 
     @PostMapping("/follow")
-    public FollowDTO createFollow(@RequestBody FollowDTO followDTO){
-        userService.securityUser(followDTO.getFollowingId());
+    public FollowResponse createFollow(@RequestBody FollowDTO followDTO){
+        userService.securityUser(followDTO.getFollowerId());
         return services.createFollow(followDTO);
     }
 

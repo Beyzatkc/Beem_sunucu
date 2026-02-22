@@ -97,5 +97,10 @@ public class User_service implements UserDetailsService {
     public List<User> getAllByIdIn(List<Long> ids){
         return userRepo.findAllByIdIn(ids);
     }
+    public User getUserById(Long userId){
+        return userRepo
+                .findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found"));
+    }
 
 }

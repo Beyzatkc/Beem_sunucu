@@ -1,6 +1,6 @@
 package com.beem.beem_sunucu.Posts;
 
-import com.beem.beem_sunucu.Follow.FollowRepository;
+import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;

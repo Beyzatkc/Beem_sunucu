@@ -1,5 +1,7 @@
-package com.beem.beem_sunucu.Follow;
+package com.beem.beem_sunucu.Follow.Repository;
 
+import com.beem.beem_sunucu.Follow.Follow;
+import com.beem.beem_sunucu.Follow.FollowStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,14 +10,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
-    List<Follow> findByFollowerId(Long follower);
+    Optional<Follow> findByFollowerIdAndFollowingId(Long followerId, Long followingId);
 
     boolean existsByFollowerIdAndFollowingId(Long followerId, Long followingId);
 
+    boolean existsByFollowerIdAndFollowingIdAndStatus(Long followerId, Long followingId, FollowStatus status);
 
     void deleteByFollowerIdAndFollowingId(Long followerId, Long followingId);
 
@@ -58,9 +62,10 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     ORDER BY
         CASE
             WHEN f.follower_id = :currentUserId THEN 1
-            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 2
-            WHEN followsMe.id IS NOT NULL THEN 3
-            ELSE 4
+            WHEN pending.id IS NOT NULL THEN 2
+            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 3
+            WHEN followsMe.id IS NOT NULL THEN 4
+            ELSE 5
         END,
         f.created_at DESC
     """,
@@ -103,9 +108,10 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     ORDER BY
         CASE
             WHEN f.following_id = :currentUserId THEN 1
-            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 2
-            WHEN followsMe.id IS NOT NULL THEN 3
-            ELSE 4
+            WHEN pending.id IS NOT NULL THEN 2
+            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 3
+            WHEN followsMe.id IS NOT NULL THEN 4
+            ELSE 5
         END,
         f.created_at DESC
     """,

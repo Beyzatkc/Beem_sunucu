@@ -1,8 +1,7 @@
 package com.beem.beem_sunucu.Follow.FollowRequest;
 
 
-import com.beem.beem_sunucu.Follow.Follow;
-import com.beem.beem_sunucu.Follow.FollowRepository;
+import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Users.SimpleUserDTO;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;

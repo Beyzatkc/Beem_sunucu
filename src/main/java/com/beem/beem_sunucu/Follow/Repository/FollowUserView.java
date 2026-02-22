@@ -1,4 +1,4 @@
-package com.beem.beem_sunucu.Follow;
+package com.beem.beem_sunucu.Follow.Repository;
 
 public interface FollowUserView {
 

@@ -4,7 +4,7 @@ package com.beem.beem_sunucu.Profile;
 import com.beem.beem_sunucu.Block.Block;
 import com.beem.beem_sunucu.Block.BlockRepository;
 import com.beem.beem_sunucu.Block.BlockResponseDTO;
-import com.beem.beem_sunucu.Follow.FollowRepository;
+import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestService;
 import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Posts.Post_Repo;

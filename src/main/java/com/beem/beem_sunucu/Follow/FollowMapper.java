@@ -2,6 +2,7 @@ package com.beem.beem_sunucu.Follow;
 
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowResponseDTO;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowSendRequest;
+import com.beem.beem_sunucu.Follow.Repository.FollowUserView;
 import com.beem.beem_sunucu.Users.SimpleUserDTO;
 import com.beem.beem_sunucu.Users.User;
 import org.springframework.stereotype.Component;
@@ -48,6 +49,23 @@ public class FollowMapper {
                 integerToBoolean(view.getIsFollower()),
                 integerToBoolean(view.getIsFollowing()),
                 integerToBoolean(view.getIsPending())
+        );
+    }
+
+    public FollowResponse toFollowResponse(
+            User user,
+            boolean isFollower,
+            boolean isFollowing,
+            boolean isPending
+    ){
+        return new FollowResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getBiography(),
+                user.getProfile(),
+                isFollower,
+                isFollowing,
+                isPending
         );
     }
 
