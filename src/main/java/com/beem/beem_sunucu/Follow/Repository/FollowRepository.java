@@ -19,23 +19,25 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     boolean existsByFollowerIdAndFollowingId(Long followerId, Long followingId);
 
+
     boolean existsByFollowerIdAndFollowingIdAndStatus(Long followerId, Long followingId, FollowStatus status);
 
     void deleteByFollowerIdAndFollowingId(Long followerId, Long followingId);
 
-    Long countByFollowerId(Long followerId);
+    Long countByFollowerIdAndStatus(Long followerId, FollowStatus status);
 
-    Long countByFollowingId(Long following);
+    Long countByFollowingIdAndStatus(Long following, FollowStatus status);
 
     @Query("SELECT t.followingId FROM Follow t WHERE t.followerId = :userId")
     List<Long> findFollowingIds(@Param("userId") Long userId);
+
+
 
     Page<Follow> findByFollowerIdAndStatus(
             Long followerId,
             FollowStatus status,
             Pageable pageable
     );
-
 
 
     @Query(value = """
@@ -63,8 +65,8 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
         CASE
             WHEN f.follower_id = :currentUserId THEN 1
             WHEN pending.id IS NOT NULL THEN 2
-            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 3
-            WHEN followsMe.id IS NOT NULL THEN 4
+            WHEN followsMe.id IS NOT NULL AND myFollow.id IS NULL THEN 3
+            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 4
             ELSE 5
         END,
         f.created_at DESC
@@ -109,8 +111,8 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
         CASE
             WHEN f.following_id = :currentUserId THEN 1
             WHEN pending.id IS NOT NULL THEN 2
-            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 3
-            WHEN followsMe.id IS NOT NULL THEN 4
+            WHEN followsMe.id IS NOT NULL AND myFollow.id IS NULL THEN 3
+            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 4
             ELSE 5
         END,
         f.created_at DESC

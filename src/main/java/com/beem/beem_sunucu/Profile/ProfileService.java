@@ -4,6 +4,8 @@ package com.beem.beem_sunucu.Profile;
 import com.beem.beem_sunucu.Block.Block;
 import com.beem.beem_sunucu.Block.BlockRepository;
 import com.beem.beem_sunucu.Block.BlockResponseDTO;
+import com.beem.beem_sunucu.Follow.FollowServices;
+import com.beem.beem_sunucu.Follow.FollowStatus;
 import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestService;
 import com.beem.beem_sunucu.Posts.Post_DTO_Response;
@@ -26,7 +28,7 @@ import java.util.Optional;
 @Service
 public class ProfileService {
 
-    private final FollowRepository followRepository;
+    private final FollowServices followServices;
     private final FollowRequestService requestService;
     private final User_Repo userRepo;
     private final Post_Repo postRepo;
@@ -34,13 +36,12 @@ public class ProfileService {
 
     @Autowired
     public ProfileService(
-            FollowRepository followRepository,
-            FollowRequestService requestService,
+            FollowServices followServices, FollowRequestService requestService,
             User_Repo userRepo,
             Post_Repo postRepo,
             BlockRepository blockRepository
     ){
-        this.followRepository = followRepository;
+        this.followServices = followServices;
         this.requestService = requestService;
         this.userRepo = userRepo;
         this.postRepo = postRepo;
@@ -60,14 +61,15 @@ public class ProfileService {
 
         return new ProfileResponse(
                 new User_Response_DTO(user),
-                followRepository.countByFollowerId(myid),
-                followRepository.countByFollowingId(myid),
+                followServices.countByFollowing(user.getId()),
+                followServices.countByFollowers(user.getId()),
                 postRepo.findByUser_Id(myid, pageable).map(Post_DTO_Response::new),
                 true,
                 false,
                 false,
                 postRepo.countByUser_Id(myid),
-                false
+                false,
+                followServices.countByPending(myid)
         );
     }
 
@@ -86,15 +88,12 @@ public class ProfileService {
             return ResponseEntity.ok(new BlockResponseDTO(targetBlock.get()));
         }
 
-        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(myId, targetId);
-        boolean isFollower = followRepository.existsByFollowerIdAndFollowingId(targetId, myId);
+        boolean isFollowing = followServices.isFollowFlow(myId, targetId, FollowStatus.ACCEPTED);
+        boolean isFollower = followServices.isFollowFlow(targetId, myId, FollowStatus.ACCEPTED);
+        boolean isPending = followServices.isFollowFlow(myId, targetId, FollowStatus.PENDING);
 
-        boolean isPending = false;
-        if(!isFollowing)
-            isPending = requestService.isFollowing(myId, targetId);
-
-        Long followedCount = followRepository.countByFollowingId(targetId);
-        Long followerCount = followRepository.countByFollowerId(targetId);
+        Long followingCount = followServices.countByFollowing(targetId);
+        Long followerCount = followServices.countByFollowers(targetId);
 
 
         User_Response_DTO targetUserDto = new User_Response_DTO(user);
@@ -111,14 +110,15 @@ public class ProfileService {
 
         return ResponseEntity.ok(new ProfileResponse(
                 targetUserDto,
-                followedCount,
+                followingCount,
                 followerCount,
                 posts,
                 false,
                 isFollowing,
                 isFollower,
                 postCount,
-                isPending
+                isPending,
+                0L
         ));
     }
 

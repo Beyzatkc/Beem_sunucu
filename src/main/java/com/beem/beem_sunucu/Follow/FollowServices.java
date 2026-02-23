@@ -132,95 +132,44 @@ public class FollowServices {
         );
     }
 
-    /*
+
 
     @Transactional
-    public FollowDTO removeFollower(FollowDTO followDTO){
+    public FollowResponse removeFollower(FollowDTO followDTO){
+        User targetUser = userService.getUserById(
+                followDTO.getFollowerId()
+        );
+        userService.existByUser(
+                followDTO.getFollowingId()
+        );
 
-        if(!userRepository.existsById(followDTO.getFollowingId())){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Following User Not Found");
-        }
-        if(!userRepository.existsById(followDTO.getFollowingId())){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Followed User Not Found");
-        }
-        if(followDTO.getFollowingId().equals(followDTO.getFollowingId())){
+        if(followDTO.getFollowerId().equals(followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot unfollow yourself");
         }
-        if(!followRepository.existsByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowingId())){
+
+        if(!followRepository.existsByFollowerIdAndFollowingId(followDTO.getFollowerId(), followDTO.getFollowingId())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"You are not following this user");
         }
 
-        followDTO.setFollowed(false);
-        Optional<FollowSendRequest> optionalRequest = followRequestRepositorty.findByRequesterIdAndRequestedIdAndStatus(
-                followDTO.getFollowingId(),
-                followDTO.getFollowingId(),
-                FollowRequestStatus.ACCEPTED
-        );
+        Follow follow = followRepository.findByFollowerIdAndFollowingId(
+                followDTO.getFollowerId(),
+                followDTO.getFollowingId()
+        ).orElseThrow(()-> new ResponseStatusException(HttpStatus.BAD_REQUEST,"You are not following this user"));
 
-        if (optionalRequest.isPresent()){
-            FollowSendRequest request;
-            request = optionalRequest.get();
-            request.setStatus(FollowRequestStatus.UNFOLLOW);
-            followRequestRepositorty.save(request);
-        }
+        followRepository.delete(follow);
 
-        followRepository.deleteByFollowedIdAndFollowingId(followDTO.getFollowingId(), followDTO.getFollowingId());
+        boolean isFollower = isFollower(followDTO);
 
-        return followDTO;
-    }
+        boolean isFollowing = false;
+        boolean isPending = false;
 
-
-
-    @Transactional
-    public List<FollowUserResponseDTO> userFollowing(Long id, int page, int size){
-        userService.existByUser(
-                id
-        );
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
-        List<Long> followingList = followRepository
-                .findByFollowerIdAndStatus(
-                        id,
-                        FollowStatus.ACCEPTED,
-                        pageable
-                )
-                .stream().map(Follow::getFollowingId)
-                .toList();
-
-        if(followingList.isEmpty()){
-            return Collections.emptyList();
-        }
-
-
-        return lastModified(
-                userPage.getContent(),
-                id
+        return mapper.toFollowResponse(
+                targetUser,
+                isFollower,
+                isFollowing,
+                isPending
         );
     }
-
-    @Transactional
-    public List<FollowUserResponseDTO> userFollowed(Long id, int page, int size){
-        if(!userRepository.existsById(id)){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
-        }
-        List<Long> followedList = followRepository.findByFollowedId(id)
-                .stream().map(Follow::getFollowingId)
-                .toList();
-
-
-        if(followedList.isEmpty()){
-            return Collections.emptyList();
-        }
-        Pageable pageable = PageRequest.of(page, size);
-        Page<User> userPage = userRepository.findAllByIdIn(followedList,pageable);
-
-        return lastModified(
-                userPage.getContent(),
-                id
-        );
-    }
-
-     */
 
     @Transactional
     public List<FollowResponse> otherUserFollowing(Long myid, Long targetid, int page, int size){
@@ -303,6 +252,26 @@ public class FollowServices {
                 followDTO.getFollowerId(),
                 FollowStatus.ACCEPTED
         );
+    }
+
+    public boolean isFollowFlow(Long followerUserId, Long followingUserId, FollowStatus status){
+        return followRepository.existsByFollowerIdAndFollowingIdAndStatus(
+                followerUserId,
+                followingUserId,
+                status
+        );
+    }
+
+    public Long countByFollowers(Long userId){
+        return followRepository.countByFollowingIdAndStatus(userId, FollowStatus.ACCEPTED);
+    }
+
+    public Long countByPending(Long userId){
+        return followRepository.countByFollowerIdAndStatus(userId, FollowStatus.PENDING);
+    }
+
+    public Long countByFollowing(Long userId){
+        return followRepository.countByFollowerIdAndStatus(userId, FollowStatus.ACCEPTED);
     }
 
 

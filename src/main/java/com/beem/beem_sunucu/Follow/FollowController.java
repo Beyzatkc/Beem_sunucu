@@ -25,27 +25,18 @@ public class FollowController {
         return services.createFollow(followDTO);
     }
 
-    /*
+
     @PostMapping("/unfollow")
-    public FollowDTO unFollow(@RequestBody FollowDTO followDTO){
-        userService.securityUser(followDTO.getFollowingId());
+    public FollowResponse unFollow(@RequestBody FollowDTO followDTO){
+        userService.securityUser(followDTO.getFollowerId());
         return services.unFollow(followDTO);
     }
+
     @PostMapping("/removeFollower")
-    public FollowDTO removeFollower(@RequestBody FollowDTO followDTO){
+    public FollowResponse removeFollower(@RequestBody FollowDTO followDTO){
         userService.securityUser(followDTO.getFollowingId());
         return services.removeFollower(followDTO);
     }
-
-    @GetMapping("/userFollowing")
-    public List<FollowUserResponseDTO> userFollowing(
-                                                 @RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "20") int size){
-        Long id = userService.getCurrentUserId();
-        return services.userFollowing(id,page,size);
-    }
-
-     */
 
     @GetMapping("/otherUserFollowing/{targetid}")
     public List<FollowResponse> otherUserFollowing(
@@ -55,16 +46,6 @@ public class FollowController {
         Long myid = userService.getCurrentUserId();
         return services.otherUserFollowing(myid,targetid,page,size);
     }
-    /*
-    @GetMapping("/userFollowed")
-    public List<FollowUserResponseDTO> userFollowed(
-                                                     @RequestParam(defaultValue = "0") int page,
-                                                     @RequestParam(defaultValue = "20") int size){
-        Long id = userService.getCurrentUserId();
-        return services.userFollowed(id,page,size);
-    }
-    */
-
     @GetMapping("/otherUserFollowers/{targetid}")
     public List<FollowResponse> otherUserFollowers(
                                                           @PathVariable Long targetid,
