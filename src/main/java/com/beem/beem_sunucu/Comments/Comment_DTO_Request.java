@@ -8,6 +8,7 @@ public class Comment_DTO_Request {
 
     @NotBlank(message = "Yorum içeriği boş olamaz")
     private String contents;
+    private String parentUsername;
 
     private Long parentCommentId;
 
@@ -42,5 +43,13 @@ public class Comment_DTO_Request {
 
     public void setParentCommentId(Long parentCommentId) {
         this.parentCommentId = parentCommentId;
+    }
+
+    public String getParentUsername() {
+        return parentUsername;
+    }
+
+    public void setParentUsername(String parentUsername) {
+        this.parentUsername = parentUsername;
     }
 }

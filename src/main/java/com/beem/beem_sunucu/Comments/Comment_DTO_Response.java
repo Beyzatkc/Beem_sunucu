@@ -21,6 +21,35 @@ public class Comment_DTO_Response {
     private boolean isLiked=false;
     private boolean isEdited=false;
     private boolean isPinned=false;
+    private Long subCommentsCount;
+
+    public Comment_DTO_Response(
+            Long commentId,
+            Long postId,
+            Long postUserId,
+            Long userId,
+            String username,
+            String contents,
+            int numberOfLike,
+            LocalDateTime commentDate,
+            LocalDateTime updateDate,
+            Long parentCommentId,
+            Boolean pinned,
+            Long subCommentsCount
+    ) {
+        this.comment_id = commentId;
+        this.post_id = postId;
+        this.postUserId = postUserId;
+        this.user = new User_Response_DTO(userId, username);
+        this.contents = contents;
+        this.number_of_like = numberOfLike;
+        this.date = commentDate;
+        this.updateDate = updateDate;
+        this.parentCommentId = parentCommentId;
+        this.isEdited = updateDate != null;
+        this.isPinned = Boolean.TRUE.equals(pinned);
+        this.subCommentsCount = subCommentsCount;
+    }
 
     public Comment_DTO_Response(
             Long commentId,
@@ -35,17 +64,20 @@ public class Comment_DTO_Response {
             Long parentCommentId,
             Boolean pinned
     ) {
-        this.comment_id = commentId;
-        this.post_id = postId;
-        this.postUserId = postUserId;
-        this.user = new User_Response_DTO(userId, username);
-        this.contents = contents;
-        this.number_of_like = numberOfLike;
-        this.date = commentDate;
-        this.updateDate = updateDate;
-        this.parentCommentId = parentCommentId;
-        this.isEdited = updateDate != null;
-        this.isPinned = Boolean.TRUE.equals(pinned);
+        this(
+                commentId,
+                postId,
+                postUserId,
+                userId,
+                username,
+                contents,
+                numberOfLike,
+                commentDate,
+                updateDate,
+                parentCommentId,
+                pinned,
+                0L
+        );
     }
 
 
@@ -155,4 +187,11 @@ public class Comment_DTO_Response {
         this.postUserId = postUserId;
     }
 
+    public Long getSubCommentsCount() {
+        return subCommentsCount;
+    }
+
+    public void setSubCommentsCount(Long subCommentsCount) {
+        this.subCommentsCount = subCommentsCount;
+    }
 }

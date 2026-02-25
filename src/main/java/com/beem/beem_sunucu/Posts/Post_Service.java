@@ -1,5 +1,7 @@
 package com.beem.beem_sunucu.Posts;
 
+import com.beem.beem_sunucu.Comments.Comment_Repo;
+import com.beem.beem_sunucu.Comments.Comment_Service;
 import com.beem.beem_sunucu.Follow.FollowRepository;
 import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User;
@@ -21,15 +23,18 @@ public class Post_Service {
     private final FollowRepository followRepository;
     private final User_Repo userRepo;
     private final Post_Repo postRepo;
+    private final Comment_Service commentService;
     private final Postof_Like_Repo postofLikeRepo;
 
 
-    public Post_Service(FollowRepository followRepository, User_Repo userRepo, Post_Repo postRepo, Postof_Like_Repo postofLikeRepo) {
+    public Post_Service(FollowRepository followRepository, User_Repo userRepo, Post_Repo postRepo, Comment_Service commentService, Postof_Like_Repo postofLikeRepo) {
         this.followRepository = followRepository;
         this.userRepo = userRepo;
         this.postRepo = postRepo;
+        this.commentService = commentService;
         this.postofLikeRepo = postofLikeRepo;
     }
+
     public Post_DTO_Response postCreate(Post_DTO_Request postDto){
         Optional<User> user = userRepo.findById(postDto.getUser_id());
         if (user.isEmpty()) {
@@ -120,6 +125,10 @@ public class Post_Service {
             Post_DTO_Response response = new Post_DTO_Response(post);
             if(likedPostIds.contains(post.getPostId())){
                 response.setLiked(true);
+            }
+            if(post.getUser().getId().equals(currentUserId)){
+                Long countPinned=commentService.CountPinned(post.getPostId());
+                response.setPinnedCount(countPinned);
             }
             return response;
         }).toList();

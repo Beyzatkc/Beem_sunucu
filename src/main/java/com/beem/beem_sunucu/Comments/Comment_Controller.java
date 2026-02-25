@@ -35,34 +35,28 @@ public class Comment_Controller {
     }
 
     @GetMapping("/commentsGet")
-    public ResponseEntity<List<Comment_DTO_Response>> commentsGet(
+    public List<Comment_DTO_Response> commentsGet(
             @RequestParam Long postId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
         Long userId= userService.getCurrentUserId();
 
-        Long pinnedCount= commentService.CountPinned(postId);
-        List<Comment_DTO_Response>comments=commentService.commentsGet(postId,userId,page,size);
-        return ResponseEntity.ok()
-                .header("X-Pinned-Count", String.valueOf(pinnedCount))
-                .body(comments);
+        List<Comment_DTO_Response> comments=commentService.commentsGet(postId,userId,page,size);
+        return comments;
     }
 
     @GetMapping("/subCommentsGet")
-    public ResponseEntity<List<Comment_DTO_Response>>subCommentsGet(
+    public List<Comment_DTO_Response>subCommentsGet(
             @RequestParam Long parentCommentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size
     ){
         Long userId= userService.getCurrentUserId();
 
-        Long pinnedCount= commentService.CountSubcomments(parentCommentId);
         List<Comment_DTO_Response>comments= commentService.subCommentsGet(parentCommentId,userId,page,size);
 
-        return ResponseEntity.ok()
-                .header("X-Subcomments-Count", String.valueOf(pinnedCount))
-                .body(comments);
+        return comments;
     }
 
     @PostMapping("/{commentId}/like")

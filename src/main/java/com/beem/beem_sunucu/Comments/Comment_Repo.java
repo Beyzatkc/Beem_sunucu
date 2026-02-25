@@ -29,7 +29,8 @@ public interface Comment_Repo extends JpaRepository<Comment,Long> {
         c.commentDate,
         c.updateDate,
         parent.commentId,
-        c.isPinned
+        c.isPinned,
+        COUNT(sc)
     )
     FROM Comment c
     JOIN c.post p
@@ -57,12 +58,6 @@ public interface Comment_Repo extends JpaRepository<Comment,Long> {
             Pageable pageable
     );
 
-    @Query("""
-SELECT COUNT(c)
-FROM Comment c
-WHERE c.parentComment.commentId = :parentId
-""")
-    long countSubComments(@Param("parentId") Long parentId);
 
 
     @Query("""

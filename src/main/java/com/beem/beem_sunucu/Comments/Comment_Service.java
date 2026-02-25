@@ -58,7 +58,8 @@ public class Comment_Service {
                 comment.getCommentDate(),
                 comment.getUpdateDate(),
                 null,
-                false
+                false,
+                0L
         );
     }
 
@@ -124,10 +125,13 @@ public class Comment_Service {
         reply.setContents(dto.getContents().trim());
         reply.setCommentDate(LocalDateTime.now());
         reply.setNumberofLikes(0);
+        reply.setWhosReply(dto.getParentUsername());
+        parentComment.setSubCommentsCount(parentComment.getSubCommentsCount()+1);
         reply.setParentYorum(parentComment);
         reply.setSubComments(new ArrayList<>());
 
         commentRepo.save(reply);
+        commentRepo.save(parentComment);
 
         Comment_DTO_Response cdto = new Comment_DTO_Response(
                 reply.getCommentId(),
@@ -140,17 +144,15 @@ public class Comment_Service {
                 reply.getCommentDate(),
                 reply.getUpdateDate(),
                 parentComment.getCommentId(),
-                reply.getPinned()
-
+                reply.getPinned(),
+                0L
         );
 
-        cdto.setParentCommentUsername(parentComment.getUser().getUsername());
+        cdto.setParentCommentUsername(dto.getParentUsername());
 
         return cdto;
     }
-    public Long CountSubcomments(Long parentId){
-        return commentRepo.countSubComments(parentId);
-    }
+
 
 
     @Transactional(readOnly = true)
@@ -232,6 +234,14 @@ public class Comment_Service {
         if(!comment.getUser().getId().equals(userId)){
             throw new CustomExceptions.NotFoundException("Bu yorumu silme yetkiniz yok.");
         }
+        if(comment.getParentYorum()!=null){
+            Comment parentcomment=commentRepo.findById(comment.getParentYorum().getCommentId())
+                    .orElseThrow(() -> new CustomExceptions.NotFoundException("Üst Yorum bulunamadı."));
+
+            parentcomment.setSubCommentsCount(comment.getSubCommentsCount()-1);
+            commentRepo.save(parentcomment);
+        }
+
        commentRepo.delete(comment);
     }
 
@@ -256,6 +266,7 @@ public class Comment_Service {
 
         comment.setContents(commentDtoUpdate.getContents().trim());
         comment.setUpdateDate(LocalDateTime.now());
+
         commentRepo.save(comment);
 
         Comment_DTO_Response dto= convertToDto(comment);
@@ -331,7 +342,8 @@ public class Comment_Service {
                 comment.getCommentDate(),
                 comment.getUpdateDate(),
                 comment.getParentYorum() != null ? comment.getParentYorum().getCommentId() : null,
-                comment.getPinned()
+                comment.getPinned(),
+                comment.getSubCommentsCount()
         );
     }
 }

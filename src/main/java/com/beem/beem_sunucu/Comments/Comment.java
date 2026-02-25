@@ -47,6 +47,12 @@ public class Comment {
     @Column(name = "is_pinned")
     private Boolean isPinned = false;
 
+    @Column(name ="pinned_count")
+    private Long subCommentsCount=0L;
+
+    @Column(name="whos_reply")
+    private String whosReply;
+
     @OneToMany(mappedBy = "parentComment", orphanRemoval = true)
     private List<Comment> subComments = new ArrayList<>();
 
@@ -135,5 +141,21 @@ public class Comment {
 
     public void setPinned(Boolean pinned) {
         isPinned = pinned;
+    }
+
+    public Long getSubCommentsCount() {
+        return subCommentsCount;
+    }
+
+    public void setSubCommentsCount(Long subCommentsCount) {
+        this.subCommentsCount = subCommentsCount;
+    }
+
+    public String getWhosReply() {
+        return whosReply;
+    }
+
+    public void setWhosReply(String whosReply) {
+        this.whosReply = whosReply;
     }
 }
