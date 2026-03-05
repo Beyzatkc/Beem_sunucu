@@ -49,6 +49,7 @@ public class Comment_Service {
 
         return new Comment_DTO_Response(
                 comment.getCommentId(),
+                comment.getWhosReply(),
                 post.getPostId(),
                 post.getUser().getId(),
                 user.getId(),
@@ -135,6 +136,7 @@ public class Comment_Service {
 
         Comment_DTO_Response cdto = new Comment_DTO_Response(
                 reply.getCommentId(),
+                reply.getWhosReply(),
                 post.getPostId(),
                 post.getUser().getId(),
                 user.getId(),
@@ -216,13 +218,6 @@ public class Comment_Service {
             return dto;
         }
     }
-    @Transactional
-    public List<User_Response_DTO> users_who_like(Long commentId, Long currentUserId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Comment_Like> commentas_like_page = commentLikeRepo.findCommentLikesWithFollowOrder(commentId, currentUserId, pageable);
-        List<Comment_Like> comments_like = commentas_like_page.getContent();
-        return comments_like.stream().map(commentLike -> new User_Response_DTO(commentLike.getUser())).toList();
-    }
 
     @Transactional
     public void removeComment(Long commentId,Long userId){
@@ -266,9 +261,7 @@ public class Comment_Service {
 
         comment.setContents(commentDtoUpdate.getContents().trim());
         comment.setUpdateDate(LocalDateTime.now());
-
         commentRepo.save(comment);
-
         Comment_DTO_Response dto= convertToDto(comment);
 
         dto.setEdited(true);
@@ -333,6 +326,7 @@ public class Comment_Service {
     private Comment_DTO_Response convertToDto(Comment comment) {
         return new Comment_DTO_Response(
                 comment.getCommentId(),
+                comment.getWhosReply(),
                 comment.getPost().getPostId(),
                 comment.getPost().getUser().getId(),
                 comment.getUser().getId(),

@@ -25,6 +25,7 @@ public class Comment_DTO_Response {
 
     public Comment_DTO_Response(
             Long commentId,
+            String parentCommentUsername,
             Long postId,
             Long postUserId,
             Long userId,
@@ -38,6 +39,7 @@ public class Comment_DTO_Response {
             Long subCommentsCount
     ) {
         this.comment_id = commentId;
+        this.parentCommentUsername=parentCommentUsername;
         this.post_id = postId;
         this.postUserId = postUserId;
         this.user = new User_Response_DTO(userId, username);
@@ -53,6 +55,7 @@ public class Comment_DTO_Response {
 
     public Comment_DTO_Response(
             Long commentId,
+            String parentCommentUsername,
             Long postId,
             Long postUserId,
             Long userId,
@@ -66,6 +69,7 @@ public class Comment_DTO_Response {
     ) {
         this(
                 commentId,
+                parentCommentUsername,
                 postId,
                 postUserId,
                 userId,

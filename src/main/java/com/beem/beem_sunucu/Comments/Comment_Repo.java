@@ -20,6 +20,7 @@ public interface Comment_Repo extends JpaRepository<Comment,Long> {
             value = """
     SELECT new com.beem.beem_sunucu.Comments.Comment_DTO_Response(
         c.commentId,
+        c.whosReply,
         p.postId,
         p.user.id,
         u.id,
@@ -74,6 +75,7 @@ public interface Comment_Repo extends JpaRepository<Comment,Long> {
                 value = """
             SELECT new com.beem.beem_sunucu.Comments.Comment_DTO_Response(
                 c.commentId,
+                c.whosReply,
                 p.postId,
                 p.user.id,
                 u.id,
@@ -90,7 +92,7 @@ public interface Comment_Repo extends JpaRepository<Comment,Long> {
             JOIN c.user u
             JOIN c.parentComment parent
             WHERE parent.commentId = :parentCommentId
-            ORDER BY c.commentDate ASC
+            ORDER BY c.isPinned DESC, c.commentDate DESC
         """,
                 countQuery = """
             SELECT COUNT(c)

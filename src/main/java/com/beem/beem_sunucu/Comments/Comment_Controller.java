@@ -69,26 +69,6 @@ public class Comment_Controller {
         return ResponseEntity.ok(response);
     }
 
-    @Transactional
-    @GetMapping("/{commentId}/getUsersWhoLike")
-    public ResponseEntity<List<User_Response_DTO>> getUsersWhoLike(
-            @PathVariable Long commentId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Long currentUserId= userService.getCurrentUserId();
-        try {
-            List<User_Response_DTO> users = commentService.users_who_like(commentId,currentUserId,page,size);
-            if (users.isEmpty()) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.ok(users);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }
-
     @DeleteMapping("/{commentId}/deleteComment")
     public ResponseEntity<Map<String, String>>DeletePost(
             @PathVariable Long commentId
