@@ -1,5 +1,7 @@
 package com.beem.beem_sunucu.Posts;
 
+import com.beem.beem_sunucu.Comments.Comment;
+import com.beem.beem_sunucu.Comments.Comment_DTO_Response;
 import com.beem.beem_sunucu.Comments.Comment_Repo;
 import com.beem.beem_sunucu.Comments.Comment_Service;
 import com.beem.beem_sunucu.Follow.FollowRepository;
@@ -58,24 +60,28 @@ public class Post_Service {
     }
 
     @Transactional
-    public String toggleLike(Long postId, Long userId) {
+    public Post_DTO_Response toggleLike(Long postId, Long userId) {
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new CustomExceptions.AuthenticationException("Gönderi bulunamadı"));
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı"));
         Optional<Post_Like> existingLike = postofLikeRepo.findByPost_PostIdAndUser_Id(postId, userId);
+
         if (existingLike.isPresent()) {
             postofLikeRepo.delete(existingLike.get());
             postRepo.decrementLike(postId);
-            return "Beğeni kaldırıldı";
+            Post_DTO_Response dto = new Post_DTO_Response(post);
+            dto.setLiked(false);
+            return dto;
         } else {
             Post_Like like = new Post_Like();
             like.setPost(post);
             like.setUser(user);
             postofLikeRepo.saveAndFlush(like);
             postRepo.incrementLike(postId);
-
-            return "Gönderi beğenildi";
+            Post_DTO_Response dto = new Post_DTO_Response(post);
+            dto.setLiked(true);
+            return dto;
         }
 
     }
@@ -166,5 +172,6 @@ public class Post_Service {
         post.setPostDate(LocalDateTime.now());
         postRepo.save(post);
     }
+
 
 }

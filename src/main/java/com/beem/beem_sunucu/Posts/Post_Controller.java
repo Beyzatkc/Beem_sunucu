@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Posts;
 
+import com.beem.beem_sunucu.Comments.Comment_DTO_Response;
 import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
 import com.beem.beem_sunucu.Users.User_service;
@@ -41,23 +42,14 @@ public class Post_Controller {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<Map<String, String>> toggleLike(
+    public ResponseEntity<Post_DTO_Response> toggleLike(
             @PathVariable Long postId
     ) {
-        Map<String, String> message = new HashMap<>();
-        Long userId= userService.getCurrentUserId();
-        try {
-            String result = postService.toggleLike(postId, userId);
-            message.put("message", result);
-            return ResponseEntity.ok(message);
-        } catch (CustomExceptions.AuthenticationException e) {
-            message.put("error",e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        } catch (Exception e) {
-            message.put("error",e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(message);
-        }
+        Long userId = userService.getCurrentUserId();
+        Post_DTO_Response response =
+                postService.toggleLike(postId,userId);
+
+        return ResponseEntity.ok(response);
     }
 
     @Transactional
