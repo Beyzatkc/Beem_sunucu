@@ -78,9 +78,6 @@ public class Post_Controller {
     ){
         Long currentUserId= userService.getCurrentUserId();
         List<Post_DTO_Response> posts = postService.homePagePosts(currentUserId, page, size);
-        if (posts.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
         return ResponseEntity.ok(posts);
     }
 
