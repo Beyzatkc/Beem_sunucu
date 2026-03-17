@@ -40,6 +40,8 @@ public class User {
 
     private boolean emailVerified = false;
 
+    private boolean privateProfile = false;
+
     public Long getId() {
         return id;
     }
@@ -120,4 +122,11 @@ public class User {
         this.emailVerified = emailVerified;
     }
 
+    public boolean isPrivateProfile() {
+        return privateProfile;
+    }
+
+    public void setPrivateProfile(boolean privateProfile) {
+        this.privateProfile = privateProfile;
+    }
 }

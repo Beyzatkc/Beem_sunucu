@@ -3,17 +3,18 @@ package com.beem.beem_sunucu.Follow;
 public class FollowDTO {
 
     private Long id;
+    private Long followerId;
     private Long followingId;
-    private Long followedId;
     private boolean followed = false;
 
     public FollowDTO() {}
 
     public FollowDTO(Follow follow) {
         this.id = follow.getId();
+        this.followerId = follow.getFollowerId();
         this.followingId = follow.getFollowingId();
-        this.followedId = follow.getFollowedId();
     }
+
 
     public Long getId() {
         return id;
@@ -23,20 +24,20 @@ public class FollowDTO {
         this.id = id;
     }
 
+    public Long getFollowerId() {
+        return followerId;
+    }
+
+    public void setFollowerId(Long followerId) {
+        this.followerId = followerId;
+    }
+
     public Long getFollowingId() {
         return followingId;
     }
 
     public void setFollowingId(Long followingId) {
         this.followingId = followingId;
-    }
-
-    public Long getFollowedId() {
-        return followedId;
-    }
-
-    public void setFollowedId(Long followedId) {
-        this.followedId = followedId;
     }
 
     public boolean isFollowed() {

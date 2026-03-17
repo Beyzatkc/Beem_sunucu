@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Block;
 
+import com.beem.beem_sunucu.ApiResponse.ApiResponse;
 import com.beem.beem_sunucu.Users.User_service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +22,17 @@ public class BlockController {
     }
 
     @PostMapping("/{blockedId}")
-    public ResponseEntity<String> blockUser(@PathVariable Long blockedId) {
+    public ApiResponse<String> blockUser(@PathVariable Long blockedId) {
         Long blockerId = userService.getCurrentUserId();
         blockService.blockUser(blockerId, blockedId);
-        return ResponseEntity.ok("User blocked successfully.");
+        return ApiResponse.success("User blocked successfully.");
     }
 
     @DeleteMapping("/{blockedId}")
-    public ResponseEntity<String> unblockUser(@PathVariable Long blockedId) {
+    public ApiResponse<String> unblockUser(@PathVariable Long blockedId) {
         Long blockerId = userService.getCurrentUserId();
         blockService.unblockUser(blockerId, blockedId);
-        return ResponseEntity.ok("User unblocked successfully.");
+        return ApiResponse.success("User unblocked successfully.");
     }
 
     @GetMapping("/getBlock")

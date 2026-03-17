@@ -1,5 +1,6 @@
 package com.beem.beem_sunucu.Profile;
 
+import com.beem.beem_sunucu.ApiResponse.ApiResponse;
 import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
 import com.beem.beem_sunucu.Users.User_service;
@@ -22,7 +23,7 @@ public class ProfileController {
     }
 
     @GetMapping("/myProfile")
-    public ProfileResponse getMyProfile(
+    public ApiResponse<ProfileResponse> getMyProfile(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Long id= userService.getCurrentUserId();
@@ -30,7 +31,7 @@ public class ProfileController {
     }
 
     @GetMapping("/otherProfile/{targetId}")
-    private ResponseEntity<?> getOtherUserProfile(
+    private ApiResponse<ProfileResponse> getOtherUserProfile(
             @PathVariable Long targetId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size

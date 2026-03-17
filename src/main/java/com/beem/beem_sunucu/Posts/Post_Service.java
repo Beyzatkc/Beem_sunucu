@@ -1,10 +1,10 @@
 package com.beem.beem_sunucu.Posts;
 
+import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Comments.Comment;
 import com.beem.beem_sunucu.Comments.Comment_DTO_Response;
 import com.beem.beem_sunucu.Comments.Comment_Repo;
 import com.beem.beem_sunucu.Comments.Comment_Service;
-import com.beem.beem_sunucu.Follow.FollowRepository;
 import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
@@ -95,9 +95,9 @@ public class Post_Service {
             User likedUser = postLike.getUser();
 
             boolean isFollowing =
-                    followRepository.existsByFollowedIdAndFollowingId(
-                            likedUser.getId(),
-                            currentUserId
+                    followRepository.existsByFollowerIdAndFollowingId(
+                            currentUserId,
+                            likedUser.getId()
                     );
             User_Response_DTO userdto=new User_Response_DTO(likedUser);
             if(isFollowing) {
@@ -113,7 +113,7 @@ public class Post_Service {
     public List<Post_DTO_Response> homePagePosts(Long currentUserId, int page, int size) {
 
         //takip edilen kullanicialri getirid
-        List<Long> followIds = followRepository.findFollowedIds(currentUserId);
+        List<Long> followIds = followRepository.findFollowingIds(currentUserId);
 
         //takip eidlen kullanıcıların begendigi gonderiler
         List<Long> followLikes = postofLikeRepo.findPostIdsByUsers(followIds);

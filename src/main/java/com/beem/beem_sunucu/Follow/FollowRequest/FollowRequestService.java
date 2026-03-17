@@ -1,8 +1,7 @@
 package com.beem.beem_sunucu.Follow.FollowRequest;
 
 
-import com.beem.beem_sunucu.Follow.Follow;
-import com.beem.beem_sunucu.Follow.FollowRepository;
+import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Users.SimpleUserDTO;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
@@ -47,13 +46,9 @@ public class FollowRequestService {
                 findUser(requestDTO.getRequesterId()),
                 findUser(requestDTO.getRequestedId())
         );
-        followRequestRepositorty.save(request);
+        FollowSendRequest newRequest = followRequestRepositorty.save(request);
 
-        return new FollowResponseDTO(
-                request,
-                new SimpleUserDTO(request.getRequester()),
-                new SimpleUserDTO(request.getRequested())
-        );
+        return flowFollowRequest(newRequest, true);
 
     }
 
@@ -68,15 +63,8 @@ public class FollowRequestService {
 
         request.setStatus(FollowRequestStatus.ACCEPTED);
         followRequestRepositorty.save(request);
-        followRepository.save(new Follow(request));
 
-        return new FollowResponseDTO(
-                request.getId(),
-                new SimpleUserDTO(request.getRequester()),
-                new SimpleUserDTO(request.getRequested()),
-                request.getStatus(),
-                request.getDate()
-        );
+        return flowFollowRequest(request, false);
     }
 
     @Transactional
@@ -91,13 +79,7 @@ public class FollowRequestService {
         request.setStatus(FollowRequestStatus.REJECTED);
         followRequestRepositorty.save(request);
 
-        return new FollowResponseDTO(
-                request.getId(),
-                new SimpleUserDTO(request.getRequester()),
-                new SimpleUserDTO(request.getRequested()),
-                request.getStatus(),
-                request.getDate()
-        );
+        return flowFollowRequest(request, false);
     }
 
     @Transactional
@@ -112,13 +94,7 @@ public class FollowRequestService {
         request.setStatus(FollowRequestStatus.CANCEL);
         followRequestRepositorty.save(request);
 
-        return new FollowResponseDTO(
-                request.getId(),
-                new SimpleUserDTO(request.getRequester()),
-                new SimpleUserDTO(request.getRequested()),
-                request.getStatus(),
-                request.getDate()
-        );
+        return flowFollowRequest(request, true);
     }
 
     @Transactional
@@ -147,4 +123,36 @@ public class FollowRequestService {
         return userRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
+
+    private FollowResponseDTO flowFollowRequest(FollowSendRequest request, boolean flowType){
+        boolean isMyFollower = isFollowing(
+                request.getRequester().getId(),
+                request.getRequested().getId()
+        );
+        boolean isFollowingYou = isFollowing(
+                request.getRequested().getId(),
+                request.getRequester().getId()
+        );
+
+        boolean tempBool = isMyFollower;
+
+        isMyFollower = flowType ? isFollowingYou: tempBool;
+        isFollowingYou =  flowType ? tempBool: isFollowingYou;
+
+        return new FollowResponseDTO(
+                request.getId(),
+                new SimpleUserDTO(request.getRequester()),
+                new SimpleUserDTO(request.getRequested()),
+                request.getStatus(),
+                request.getDate(),
+                isMyFollower,
+                isFollowingYou
+        );
+    }
+
+    public boolean isFollowing(Long requesterId, Long requestedId) {
+        return followRequestRepositorty.isFollowingRaw(requesterId, requestedId) > 0;
+    }
+
+
 }

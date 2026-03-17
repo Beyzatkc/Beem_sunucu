@@ -16,11 +16,24 @@ public class ProfileResponse {
     private boolean isFollowing;
     private boolean isFollower;
     private Long postCount;
+    private boolean isPending;
+    private Long notificationCount;
 
     public ProfileResponse(){}
 
 
-    public ProfileResponse(User_Response_DTO userResponseDto, Long followedCount, Long followerCount, Page<Post_DTO_Response> myPost, boolean isOwnProfile, boolean isFollowing, boolean isFollower, Long postCount) {
+    public ProfileResponse(
+            User_Response_DTO userResponseDto,
+            Long followedCount,
+            Long followerCount,
+            Page<Post_DTO_Response> myPost,
+            boolean isOwnProfile,
+            boolean isFollowing,
+            boolean isFollower,
+            Long postCount,
+            boolean isPending,
+            Long notificationCount
+    ) {
         this.userResponseDto = userResponseDto;
         this.followedCount = followedCount;
         this.followerCount = followerCount;
@@ -29,8 +42,18 @@ public class ProfileResponse {
         this.isFollowing = isFollowing;
         this.isFollower = isFollower;
         this.postCount = postCount;
+        this.isPending = isPending;
+        this.notificationCount = notificationCount;
     }
 
+
+    public Long getNotificationCount() {
+        return notificationCount;
+    }
+
+    public void setNotificationCount(Long notificationCount) {
+        this.notificationCount = notificationCount;
+    }
 
     public User_Response_DTO getUserResponseDto() {
         return userResponseDto;
@@ -95,4 +118,13 @@ public class ProfileResponse {
     public void setPostCount(Long postCount) {
         this.postCount = postCount;
     }
+
+    public boolean isPending() {
+        return isPending;
+    }
+
+    public void setPending(boolean pending) {
+        isPending = pending;
+    }
+
 }

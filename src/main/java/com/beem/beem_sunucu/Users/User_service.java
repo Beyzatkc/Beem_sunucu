@@ -7,8 +7,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -80,6 +82,27 @@ public class User_service implements UserDetailsService {
     public void securityUser(String  name){
         if(!SecurityContextHolder.getContext().getAuthentication().getName().equals(name))
             throw new SecurityException("Yasaklı erişim.");
+    }
+
+    public boolean isPrivateProfile(Long userId){
+        return userRepo
+                .findPrivateProfileByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found"));
+    }
+
+    public void existByUser(Long userId){
+        if(!userRepo.existsById(userId)){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found");
+        }
+    }
+
+    public List<User> getAllByIdIn(List<Long> ids){
+        return userRepo.findAllByIdIn(ids);
+    }
+    public User getUserById(Long userId){
+        return userRepo
+                .findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"User Not Found"));
     }
 
 }

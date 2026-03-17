@@ -1,42 +1,62 @@
 package com.beem.beem_sunucu.Follow;
 
-import com.beem.beem_sunucu.Follow.FollowRequest.FollowSendRequest;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "follows")
+@Table(
+        name = "follows",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"follower_id", "following_id"})
+)
 public class Follow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "follower_id", nullable = false)
+    private Long followerId;
+
+    @Column(name = "following_id", nullable = false)
     private Long followingId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Long followedId;
+    private FollowStatus status;
 
     @Column(nullable = false)
-    private LocalDateTime date;
+    private LocalDateTime createdAt;
 
+    @Column
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate(){
-        this.date = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
 
-    public Follow() {}
+    @PreUpdate
+    protected void onUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
 
-    public Follow(FollowSendRequest request){
-        this.followingId = request.getRequester().getId();
-        this.followedId = request.getRequested().getId();
+    public Follow() {
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getFollowerId() {
+        return followerId;
+    }
+
+    public void setFollowerId(Long followerId) {
+        this.followerId = followerId;
     }
 
     public Long getFollowingId() {
@@ -47,19 +67,27 @@ public class Follow {
         this.followingId = followingId;
     }
 
-    public Long getFollowedId() {
-        return followedId;
+    public FollowStatus getStatus() {
+        return status;
     }
 
-    public void setFollowedId(Long followedId) {
-        this.followedId = followedId;
+    public void setStatus(FollowStatus status) {
+        this.status = status;
     }
 
-    public LocalDateTime getDate() {
-        return date;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setDate(LocalDateTime date) {
-        this.date = date;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
