@@ -1,12 +1,10 @@
 package com.beem.beem_sunucu.Profile;
 
 
-import com.beem.beem_sunucu.Block.Block;
-import com.beem.beem_sunucu.Block.BlockRepository;
-import com.beem.beem_sunucu.Block.BlockResponseDTO;
+import com.beem.beem_sunucu.ApiResponse.ApiResponse;
+import com.beem.beem_sunucu.Block.*;
 import com.beem.beem_sunucu.Follow.FollowServices;
 import com.beem.beem_sunucu.Follow.FollowStatus;
-import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestService;
 import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Posts.Post_Repo;
@@ -18,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -49,7 +46,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public ProfileResponse getMyProfile(Long myid, int page, int size){
+    public ApiResponse<ProfileResponse> getMyProfile(Long myid, int page, int size){
         User user = userRepo.findById(myid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -59,7 +56,7 @@ public class ProfileService {
                 Sort.by(Sort.Direction.DESC, "postDate")
         );
 
-        return new ProfileResponse(
+        return ApiResponse.success(new ProfileResponse(
                 new User_Response_DTO(user),
                 followServices.countByFollowing(user.getId()),
                 followServices.countByFollowers(user.getId()),
@@ -70,22 +67,22 @@ public class ProfileService {
                 postRepo.countByUser_Id(myid),
                 false,
                 followServices.countByPending(myid)
-        );
+        ));
     }
 
     @Transactional
-    public ResponseEntity<?> getOtherUserProfile(Long myId, Long targetId, int page, int size) {
+    public ApiResponse<ProfileResponse> getOtherUserProfile(Long myId, Long targetId, int page, int size) {
         User user = userRepo.findById(targetId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         Optional<Block> myBlock = blockRepository.findByBlockerIdAndBlockedId(myId, targetId);
         if (myBlock.isPresent()) {
-            return ResponseEntity.ok(new BlockResponseDTO(myBlock.get()));
+            throw new BlockException("You blocked this user", BlockStatus.YOU_BLOCKER);
         }
 
         Optional<Block> targetBlock = blockRepository.findByBlockerIdAndBlockedId(targetId, myId);
         if (targetBlock.isPresent()) {
-            return ResponseEntity.ok(new BlockResponseDTO(targetBlock.get()));
+            throw new BlockException("Target blocked this you", BlockStatus.TARGET_BLOCKER);
         }
 
         boolean isFollowing = followServices.isFollowFlow(myId, targetId, FollowStatus.ACCEPTED);
@@ -108,7 +105,7 @@ public class ProfileService {
 
         Page<Post_DTO_Response> posts = postRepo.findByUser_Id(targetId, pageable).map(Post_DTO_Response::new);
 
-        return ResponseEntity.ok(new ProfileResponse(
+        return ApiResponse.success(new ProfileResponse(
                 targetUserDto,
                 followingCount,
                 followerCount,

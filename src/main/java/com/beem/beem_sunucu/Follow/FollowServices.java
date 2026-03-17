@@ -1,12 +1,14 @@
 package com.beem.beem_sunucu.Follow;
 
 import com.beem.beem_sunucu.Block.BlockService;
+import com.beem.beem_sunucu.Block.UserBlockedEvent;
 import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestRepositorty;
 import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
 import com.beem.beem_sunucu.Follow.Repository.FollowUserView;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -211,6 +213,12 @@ public class FollowServices {
        return lastModified(followPage);
     }
 
+    @EventListener
+    public void handleUserBlocked(UserBlockedEvent event){
+        deleteFollow(event.blockerId(), event.blockedId());
+        deleteFollow(event.blockedId(), event.blockerId());
+    }
+
 
     private void alreadyExistsFollow(FollowDTO followDTO){
         if(followRepository.existsByFollowerIdAndFollowingId(followDTO.getFollowerId(), followDTO.getFollowingId())){
@@ -272,6 +280,10 @@ public class FollowServices {
 
     public Long countByFollowing(Long userId){
         return followRepository.countByFollowerIdAndStatus(userId, FollowStatus.ACCEPTED);
+    }
+
+    private void deleteFollow(Long followerId, Long followingId){
+        followRepository.deleteByFollowerIdAndFollowingId(followerId, followingId);
     }
 
 

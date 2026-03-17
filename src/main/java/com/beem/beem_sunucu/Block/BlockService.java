@@ -1,11 +1,10 @@
 package com.beem.beem_sunucu.Block;
 
-import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
-import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestRepositorty;
-import com.beem.beem_sunucu.Follow.FollowRequest.FollowRequestStatus;
+import com.beem.beem_sunucu.Follow.FollowServices;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +18,16 @@ public class BlockService {
 
     private final BlockRepository blockRepository;
     private final User_Repo userRepo;
-    private final FollowRepository followRepo;
-    private final FollowRequestRepositorty followRequestRepo;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
-    public BlockService(BlockRepository blockRepository,User_Repo userRepo,
-                        FollowRepository followRepo,
-                        FollowRequestRepositorty followRequestRepo){
+    public BlockService(BlockRepository blockRepository,
+                        User_Repo userRepo,
+                        ApplicationEventPublisher eventPublisher
+    ){
         this.blockRepository = blockRepository;
         this.userRepo = userRepo;
-        this.followRepo = followRepo;
-        this.followRequestRepo = followRequestRepo;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -46,8 +44,7 @@ public class BlockService {
         User blocked = userRepo.findById(blockedId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Blocked user not found"));
 
-        BlockedRequest(blockerId,blockedId);
-        BlockedRequest(blockedId,blockerId);
+        eventPublisher.publishEvent(new UserBlockedEvent(blockedId, blockerId));
 
         Block block = new Block(blocker, blocked);
         blockRepository.save(block);
@@ -68,16 +65,8 @@ public class BlockService {
                 .toList();
     }
 
+
     public boolean isBlocked(Long blockerId, Long blockedId) {
         return blockRepository.existsByBlockerIdAndBlockedId(blockerId, blockedId);
-    }
-
-    private void BlockedRequest(Long id, Long targetId){
-        followRequestRepo.findByRequesterIdAndRequestedIdAndStatus(id, targetId, FollowRequestStatus.ACCEPTED)
-                .ifPresent(request -> {
-                    request.setStatus(FollowRequestStatus.BLOCKED);
-                    followRequestRepo.save(request);
-                    followRepo.deleteByFollowerIdAndFollowingId(id, targetId);
-                });
     }
 }

@@ -64,10 +64,11 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     ORDER BY
         CASE
             WHEN f.follower_id = :currentUserId THEN 1
-            WHEN pending.id IS NOT NULL THEN 2
-            WHEN followsMe.id IS NOT NULL AND myFollow.id IS NULL THEN 3
-            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 4
-            ELSE 5
+            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 2
+            WHEN followsMe.id IS NULL AND myFollow.id IS NOT NULL THEN 3
+            WHEN followsMe.id IS NOT NULL AND myFollow.id IS NULL THEN 4
+            WHEN pending.id IS NOT NULL THEN 5
+            ELSE 6
         END,
         f.created_at DESC
     """,
@@ -110,10 +111,11 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     ORDER BY
         CASE
             WHEN f.following_id = :currentUserId THEN 1
-            WHEN pending.id IS NOT NULL THEN 2
-            WHEN followsMe.id IS NOT NULL AND myFollow.id IS NULL THEN 3
-            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 4
-            ELSE 5
+            WHEN myFollow.id IS NOT NULL AND followsMe.id IS NOT NULL THEN 2
+            WHEN followsMe.id IS NULL AND myFollow.id IS NOT NULL THEN 3
+            WHEN followsMe.id IS NOT NULL AND myFollow.id IS NULL THEN 4
+            WHEN pending.id IS NOT NULL THEN 5
+            ELSE 6
         END,
         f.created_at DESC
     """,
