@@ -12,9 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class Comment_Service {
@@ -31,42 +30,87 @@ public class Comment_Service {
     }
     @Transactional
     public Comment_DTO_Response commentCreate(Comment_DTO_Request commentDtoRequest){
-        Optional<User> user = userRepo.findById(commentDtoRequest.getUserId());
-        Optional<Post>post=postRepo.findById(commentDtoRequest.getPostId());
-        if (user.isEmpty()) {
-            throw new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı.");
-        }
-        if(post.isEmpty()){
-            throw new CustomExceptions.AuthenticationException("Post bulunamadı.");
-        }
-        Comment comment=new Comment();
-        comment.setUser(user.get());
+        User user = userRepo.findById(commentDtoRequest.getUserId())
+                .orElseThrow(() -> new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı."));
+
+        Post post = postRepo.findById(commentDtoRequest.getPostId())
+                .orElseThrow(() -> new CustomExceptions.AuthenticationException("Post bulunamadı."));
+
+        Comment comment = new Comment();
+        comment.setUser(user);
         comment.setContents(commentDtoRequest.getContents());
         comment.setCommentDate(LocalDateTime.now());
         comment.setNumberofLikes(0);
         comment.setParentYorum(null);
-        comment.setPost(post.get());
+        comment.setPost(post);
         comment.setSubComments(new ArrayList<>());
+
         commentRepo.save(comment);
-        return new Comment_DTO_Response(comment);
-    }
 
-    @Transactional
-    public List<Comment_DTO_Response>commentsGet(Long postId,Long currentUserId, int page, int size){
-        Page<Comment> comments = commentRepo.findByPost_PostIdAndParentCommentIsNullOrderByCommentDateDesc(postId, PageRequest.of(page, size)
+        return new Comment_DTO_Response(
+                comment.getCommentId(),
+                comment.getWhosReply(),
+                post.getPostId(),
+                post.getUser().getId(),
+                user.getId(),
+                user.getUsername(),
+                comment.getContents(),
+                comment.getNumberofLikes(),
+                comment.getCommentDate(),
+                comment.getUpdateDate(),
+                null,
+                false,
+                0L
         );
-        return comments.stream()
-                .map(comment -> {
-                    Comment_DTO_Response dto = new Comment_DTO_Response(comment);
-                    boolean isLiked = commentLikeRepo.existsByComment_CommentIdAndUser_Id(comment.getCommentId(), currentUserId);
-                    dto.setLiked(isLiked);
-                    return dto;
-                })
-                .toList();
     }
 
+
+    @Transactional(readOnly = true)
+    public List<Comment_DTO_Response> commentsGet(
+            Long postId,
+            Long currentUserId,
+            int page,
+            int size
+    ) {
+
+        Page<Comment_DTO_Response> comments =
+                commentRepo.findMainComments(
+                        postId,
+                        PageRequest.of(page, size)
+                );
+
+        List<Comment_DTO_Response> content = comments.getContent();
+
+        List<Long> commentIds = content.stream()
+                .map(Comment_DTO_Response::getComment_id)
+                .toList();
+
+        Set<Long> likedCommentIds;
+
+        if (currentUserId != null && !commentIds.isEmpty()) {
+            likedCommentIds = commentLikeRepo
+                    .findByComment_CommentIdInAndUser_Id(commentIds, currentUserId)
+                    .stream()
+                    .map(cl -> cl.getComment().getCommentId())
+                    .collect(Collectors.toSet());
+        } else {
+            likedCommentIds = new HashSet<>();
+        }
+
+        content.forEach(dto ->
+                dto.setLiked(likedCommentIds.contains(dto.getComment_id()))
+        );
+
+        return content;
+    }
+
+    public Long CountPinned(Long postId){
+        return commentRepo.countPinnedComments(postId);
+    }
+
+
     @Transactional
-    public Comment_DTO_Response createSubComment(Comment_DTO_Request dto){
+    public Comment_DTO_Response createSubComment(Comment_DTO_Request dto) {
         User user = userRepo.findById(dto.getUserId())
                 .orElseThrow(() -> new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı."));
 
@@ -76,66 +120,103 @@ public class Comment_Service {
         Comment parentComment = commentRepo.findById(dto.getParentCommentId())
                 .orElseThrow(() -> new CustomExceptions.NotFoundException("Yorum bulunamadı."));
 
-        Comment reply=new Comment();
+        Comment reply = new Comment();
         reply.setUser(user);
         reply.setPost(post);
-        reply.setContents(dto.getContents());
+        reply.setContents(dto.getContents().trim());
         reply.setCommentDate(LocalDateTime.now());
         reply.setNumberofLikes(0);
+        reply.setWhosReply(dto.getParentUsername());
+        parentComment.setSubCommentsCount(parentComment.getSubCommentsCount()+1);
         reply.setParentYorum(parentComment);
         reply.setSubComments(new ArrayList<>());
 
         commentRepo.save(reply);
+        commentRepo.save(parentComment);
 
-        return new Comment_DTO_Response(reply);
+        Comment_DTO_Response cdto = new Comment_DTO_Response(
+                reply.getCommentId(),
+                reply.getWhosReply(),
+                post.getPostId(),
+                post.getUser().getId(),
+                user.getId(),
+                user.getUsername(),
+                reply.getContents(),
+                reply.getNumberofLikes(),
+                reply.getCommentDate(),
+                reply.getUpdateDate(),
+                parentComment.getCommentId(),
+                reply.getPinned(),
+                0L
+        );
+
+        cdto.setParentCommentUsername(dto.getParentUsername());
+
+        return cdto;
     }
 
-    @Transactional
-    public List<Comment_DTO_Response>subCommentsGet(Long parentCommentId,Long currentUserId, int page, int size){
-        Page<Comment>comments=commentRepo.findByParentComment_CommentIdOrderByCommentDateDesc(parentCommentId, PageRequest.of(page, size));
-        return comments.stream()
-                .map(comment -> {
-                    Comment_DTO_Response dto = new Comment_DTO_Response(comment);
-                    boolean isLiked = commentLikeRepo.existsByComment_CommentIdAndUser_Id(comment.getCommentId(), currentUserId);
-                    dto.setLiked(isLiked);
-                    return dto;
-                })
+
+
+    @Transactional(readOnly = true)
+    public List<Comment_DTO_Response> subCommentsGet(
+            Long parentCommentId,
+            Long currentUserId,
+            int page,
+            int size
+    ) {
+
+        Page<Comment_DTO_Response> comments =
+                commentRepo.findSubCommentsByParentId(
+                        parentCommentId,
+                        PageRequest.of(page, size)
+                );
+
+        List<Comment_DTO_Response> content = comments.getContent();
+
+        List<Long> commentIds = content.stream()
+                .map(Comment_DTO_Response::getComment_id)
                 .toList();
+        Set<Long> likedCommentIds =
+                commentLikeRepo.findByComment_CommentIdInAndUser_Id(commentIds, currentUserId)
+                        .stream()
+                        .map(cl -> cl.getComment().getCommentId())
+                        .collect(Collectors.toSet());
+
+        content.forEach(dto ->
+                dto.setLiked(likedCommentIds.contains(dto.getComment_id()))
+        );
+
+        return content;
     }
 
     @Transactional
-    public String toggleLike(Long commentId,Long userId){
-       Comment comment=commentRepo.findById(commentId)
-               .orElseThrow(() -> new CustomExceptions.AuthenticationException("Yorum bulunamadı"));
-       User user=userRepo.findById(userId)
-               .orElseThrow(() -> new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı"));
-       Optional<Comment_Like>existingLike=commentLikeRepo.findByComment_CommentIdAndUser_Id(commentId,userId);
-       if(existingLike.isPresent()){
-           commentLikeRepo.delete(existingLike.get());
+    public Comment_DTO_Response toggleLike(Long commentId, Long userId) {
+        Comment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new CustomExceptions.AuthenticationException("Yorum bulunamadı"));
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı"));
 
-           int newCount = Math.max(0, comment.getNumberofLikes() - 1);
-           commentRepo.updateLikeCount(commentId, newCount);
+        Optional<Comment_Like> existingLike = commentLikeRepo.findByComment_CommentIdAndUser_Id(commentId, userId);
 
-           return "Beğeni kaldırıldı";
-       }else{
-           Comment_Like commentLike=new Comment_Like();
-           commentLike.setComment(comment);
-           commentLike.setUser(user);
-           commentLikeRepo.saveAndFlush(commentLike);
+        if (existingLike.isPresent()) {
+            commentLikeRepo.delete(existingLike.get());
+            comment.setNumberofLikes(Math.max(0, comment.getNumberofLikes() - 1));
+            commentRepo.saveAndFlush(comment);
+            Comment_DTO_Response dto= convertToDto(comment);
+            dto.setLiked(false);
+            return dto;
+        } else {
+            Comment_Like commentLike = new Comment_Like();
+            commentLike.setComment(comment);
+            commentLike.setUser(user);
+            commentLikeRepo.save(commentLike);
 
-           int newCount = comment.getNumberofLikes() + 1;
-           commentRepo.updateLikeCount(commentId, newCount);
-
-           return "Yorum beğenildi";
-       }
-
-    }
-    @Transactional
-    public List<User_Response_DTO> users_who_like(Long commentId, Long currentUserId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Comment_Like> commentas_like_page = commentLikeRepo.findCommentLikesWithFollowOrder(commentId, currentUserId, pageable);
-        List<Comment_Like> comments_like = commentas_like_page.getContent();
-        return comments_like.stream().map(commentLike -> new User_Response_DTO(commentLike.getUser())).toList();
+            comment.setNumberofLikes(comment.getNumberofLikes() + 1);
+            commentRepo.saveAndFlush(comment);
+            Comment_DTO_Response dto= convertToDto(comment);
+            dto.setLiked(true);
+            return dto;
+        }
     }
 
     @Transactional
@@ -148,22 +229,116 @@ public class Comment_Service {
         if(!comment.getUser().getId().equals(userId)){
             throw new CustomExceptions.NotFoundException("Bu yorumu silme yetkiniz yok.");
         }
+        if(comment.getParentYorum()!=null){
+            Comment parentcomment=commentRepo.findById(comment.getParentYorum().getCommentId())
+                    .orElseThrow(() -> new CustomExceptions.NotFoundException("Üst Yorum bulunamadı."));
+
+            parentcomment.setSubCommentsCount(comment.getSubCommentsCount()-1);
+            commentRepo.save(parentcomment);
+        }
+
        commentRepo.delete(comment);
     }
 
     @Transactional
-    public void updateComment(Long commentId,Long userId,Comment_DTO_Update commentDtoUpdate){
-        Comment comment=commentRepo.findById(commentId)
+    public Comment_DTO_Response updateComment(
+            Long commentId,
+            Long userId,
+            Comment_DTO_Update commentDtoUpdate
+    ) {
+        Comment comment = commentRepo.findById(commentId)
                 .orElseThrow(() -> new CustomExceptions.NotFoundException("Yorum bulunamadı."));
-        if(userId==null){
-            throw new CustomExceptions.AuthorizationException("Kullanıcı Bulunamadı");
+
+        boolean isliked=commentLikeRepo.existsByComment_CommentIdAndUser_Id(commentId,userId);
+
+        if (userId == null) {
+            throw new CustomExceptions.NotFoundException("Kullanıcı bulunamadı.");
         }
-        if(!comment.getUser().getId().equals(userId)){
-            throw new CustomExceptions.NotFoundException("Bu yorumu güncelleme yetkiniz yok.");
+
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new CustomExceptions.AuthorizationException("Bu yorumu güncelleme yetkiniz yok.");
         }
-        comment.setContents(commentDtoUpdate.getContents());
-        comment.setCommentDate(LocalDateTime.now());
+
+        comment.setContents(commentDtoUpdate.getContents().trim());
+        comment.setUpdateDate(LocalDateTime.now());
         commentRepo.save(comment);
+        Comment_DTO_Response dto= convertToDto(comment);
+
+        dto.setEdited(true);
+        dto.setLiked(isliked);
+
+        return dto;
+    }
+
+
+    @Transactional
+    public Comment_DTO_Response pinComment(Long commentId,Long currentUserId){
+        Comment comment=commentRepo.findById(commentId)
+                .orElseThrow(()-> new CustomExceptions.NotFoundException("Yorum bulunamadı."));
+
+        Long postId = comment.getPost().getPostId();
+
+        if (Boolean.TRUE.equals(comment.getPinned())) {
+            throw new CustomExceptions.AlreadyExistsException("Yorum zaten sabitlenmiş.");
+        }
+
+        Long pinnedCount = commentRepo.countPinnedComments(postId);
+
+        if (pinnedCount >= 5) {
+            throw new CustomExceptions.BusinessException(
+                    "En fazla 5 yorum sabitlenebilir."
+            );
+        }
+         Long postOwnerId=comment.getPost().getUser().getId();
+         //if(!postOwnerId.equals(currentUserId)){
+          //   throw new CustomExceptions.AuthorizationException("Bu yorumu sabitleme yetkiniz yok.");
+         //}
+
+        boolean isliked=commentLikeRepo.existsByComment_CommentIdAndUser_Id(commentId,currentUserId);
+
+        comment.setPinned(true);
+        commentRepo.save(comment);
+
+        Comment_DTO_Response dto= convertToDto(comment);
+        dto.setLiked(isliked);
+        return dto;
+    }
+
+    @Transactional
+    public Comment_DTO_Response removePin(Long commentId,Long currentUserId){
+        Comment comment=commentRepo.findById(commentId)
+                .orElseThrow(()-> new CustomExceptions.NotFoundException("Yorum bulunamadı."));
+        Long postOwnerId=comment.getPost().getUser().getId();
+        //if(!postOwnerId.equals(currentUserId)){
+        //   throw new CustomExceptions.AuthorizationException("Bu yorumu sabitleme yetkiniz yok.");
+        //}
+        boolean isliked=commentLikeRepo.existsByComment_CommentIdAndUser_Id(commentId,currentUserId);
+
+        comment.setPinned(false);
+        commentRepo.save(comment);
+
+        Comment_DTO_Response dto= convertToDto(comment);
+        dto.setLiked(isliked);
+        return dto;
+    }
+
+
+    private Comment_DTO_Response convertToDto(Comment comment) {
+        return new Comment_DTO_Response(
+                comment.getCommentId(),
+                comment.getWhosReply(),
+                comment.getPost().getPostId(),
+                comment.getPost().getUser().getId(),
+                comment.getUser().getId(),
+                comment.getUser().getUsername(),
+                comment.getContents(),
+                comment.getNumberofLikes(),
+                comment.getCommentDate(),
+                comment.getUpdateDate(),
+                comment.getParentYorum() != null ? comment.getParentYorum().getCommentId() : null,
+                comment.getPinned(),
+                comment.getSubCommentsCount()
+        );
     }
 }
 

@@ -23,6 +23,7 @@ public class Post_DTO_Response {
     private String categories;
 
     private boolean isLiked=false;
+    private Long pinnedCount=0L;
 
 
     public void setCategories(String categories) {
@@ -99,6 +100,13 @@ public class Post_DTO_Response {
         return categories;
     }
 
+    public Long getPinnedCount() {
+        return pinnedCount;
+    }
+
+    public void setPinnedCount(Long pinnedCount) {
+        this.pinnedCount = pinnedCount;
+    }
 
     public Post_DTO_Response(Post post) {
         this.post_id = post.getPostId();

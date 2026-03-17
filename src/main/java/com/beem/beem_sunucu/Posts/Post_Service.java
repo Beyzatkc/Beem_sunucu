@@ -1,6 +1,10 @@
 package com.beem.beem_sunucu.Posts;
 
 import com.beem.beem_sunucu.Follow.Repository.FollowRepository;
+import com.beem.beem_sunucu.Comments.Comment;
+import com.beem.beem_sunucu.Comments.Comment_DTO_Response;
+import com.beem.beem_sunucu.Comments.Comment_Repo;
+import com.beem.beem_sunucu.Comments.Comment_Service;
 import com.beem.beem_sunucu.Users.CustomExceptions;
 import com.beem.beem_sunucu.Users.User;
 import com.beem.beem_sunucu.Users.User_Repo;
@@ -21,15 +25,18 @@ public class Post_Service {
     private final FollowRepository followRepository;
     private final User_Repo userRepo;
     private final Post_Repo postRepo;
+    private final Comment_Service commentService;
     private final Postof_Like_Repo postofLikeRepo;
 
 
-    public Post_Service(FollowRepository followRepository, User_Repo userRepo, Post_Repo postRepo, Postof_Like_Repo postofLikeRepo) {
+    public Post_Service(FollowRepository followRepository, User_Repo userRepo, Post_Repo postRepo, Comment_Service commentService, Postof_Like_Repo postofLikeRepo) {
         this.followRepository = followRepository;
         this.userRepo = userRepo;
         this.postRepo = postRepo;
+        this.commentService = commentService;
         this.postofLikeRepo = postofLikeRepo;
     }
+
     public Post_DTO_Response postCreate(Post_DTO_Request postDto){
         Optional<User> user = userRepo.findById(postDto.getUser_id());
         if (user.isEmpty()) {
@@ -53,24 +60,28 @@ public class Post_Service {
     }
 
     @Transactional
-    public String toggleLike(Long postId, Long userId) {
+    public Post_DTO_Response toggleLike(Long postId, Long userId) {
         Post post = postRepo.findById(postId)
                 .orElseThrow(() -> new CustomExceptions.AuthenticationException("Gönderi bulunamadı"));
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new CustomExceptions.AuthenticationException("Kullanıcı bulunamadı"));
         Optional<Post_Like> existingLike = postofLikeRepo.findByPost_PostIdAndUser_Id(postId, userId);
+
         if (existingLike.isPresent()) {
             postofLikeRepo.delete(existingLike.get());
             postRepo.decrementLike(postId);
-            return "Beğeni kaldırıldı";
+            Post_DTO_Response dto = new Post_DTO_Response(post);
+            dto.setLiked(false);
+            return dto;
         } else {
             Post_Like like = new Post_Like();
             like.setPost(post);
             like.setUser(user);
             postofLikeRepo.saveAndFlush(like);
             postRepo.incrementLike(postId);
-
-            return "Gönderi beğenildi";
+            Post_DTO_Response dto = new Post_DTO_Response(post);
+            dto.setLiked(true);
+            return dto;
         }
 
     }
@@ -79,8 +90,6 @@ public class Post_Service {
         Page<Post_Like> posts_like_page = postofLikeRepo.findPostLikesWithFollowOrder(postId, currentUserId, pageable);
         List<Post_Like> posts_like = posts_like_page.getContent();
         return posts_like.stream()
-                .filter(postLike ->
-                        !postLike.getUser().getId().equals(currentUserId))
                 .map(postLike -> {
 
             User likedUser = postLike.getUser();
@@ -123,6 +132,10 @@ public class Post_Service {
             if(likedPostIds.contains(post.getPostId())){
                 response.setLiked(true);
             }
+            if(post.getUser().getId().equals(currentUserId)){
+                Long countPinned=commentService.CountPinned(post.getPostId());
+                response.setPinnedCount(countPinned);
+            }
             return response;
         }).toList();
         return responses;
@@ -159,5 +172,6 @@ public class Post_Service {
         post.setPostDate(LocalDateTime.now());
         postRepo.save(post);
     }
+
 
 }

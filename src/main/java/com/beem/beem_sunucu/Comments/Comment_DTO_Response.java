@@ -4,26 +4,87 @@ import com.beem.beem_sunucu.Posts.Post_DTO_Response;
 import com.beem.beem_sunucu.Users.User_Response_DTO;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Comment_DTO_Response {
     private Long comment_id;
+    private String parentCommentUsername;
     private Long post_id;
-    private User_Response_DTO userResponseDto;
+    private Long postUserId;
+    private User_Response_DTO user;
     private String contents;
     private int number_of_like;
     private LocalDateTime date;
-    private Long parent_yorum_id;
+    private LocalDateTime updateDate;
+    private Long parentCommentId;
     private boolean isLiked=false;
+    private boolean isEdited=false;
+    private boolean isPinned=false;
+    private Long subCommentsCount;
 
-    public Comment_DTO_Response(Comment comment) {
-        this.comment_id = comment.getCommentId();
-        this.post_id = comment.getPost().getPostId();
-        this.userResponseDto = new User_Response_DTO(comment.getUser());
-        this.contents = comment.getContents();
-        this.number_of_like = comment.getNumberofLikes();
-        this.date = comment.getCommentDate();
-        this.parent_yorum_id = comment.getParentYorum() != null ? comment.getParentYorum().getCommentId() : null;
+    public Comment_DTO_Response(
+            Long commentId,
+            String parentCommentUsername,
+            Long postId,
+            Long postUserId,
+            Long userId,
+            String username,
+            String contents,
+            int numberOfLike,
+            LocalDateTime commentDate,
+            LocalDateTime updateDate,
+            Long parentCommentId,
+            Boolean pinned,
+            Long subCommentsCount
+    ) {
+        this.comment_id = commentId;
+        this.parentCommentUsername=parentCommentUsername;
+        this.post_id = postId;
+        this.postUserId = postUserId;
+        this.user = new User_Response_DTO(userId, username);
+        this.contents = contents;
+        this.number_of_like = numberOfLike;
+        this.date = commentDate;
+        this.updateDate = updateDate;
+        this.parentCommentId = parentCommentId;
+        this.isEdited = updateDate != null;
+        this.isPinned = Boolean.TRUE.equals(pinned);
+        this.subCommentsCount = subCommentsCount;
     }
+
+    public Comment_DTO_Response(
+            Long commentId,
+            String parentCommentUsername,
+            Long postId,
+            Long postUserId,
+            Long userId,
+            String username,
+            String contents,
+            int numberOfLike,
+            LocalDateTime commentDate,
+            LocalDateTime updateDate,
+            Long parentCommentId,
+            Boolean pinned
+    ) {
+        this(
+                commentId,
+                parentCommentUsername,
+                postId,
+                postUserId,
+                userId,
+                username,
+                contents,
+                numberOfLike,
+                commentDate,
+                updateDate,
+                parentCommentId,
+                pinned,
+                0L
+        );
+    }
+
+
 
     public Long getPost_id() {
         return post_id;
@@ -33,12 +94,12 @@ public class Comment_DTO_Response {
         this.post_id = post_id;
     }
 
-    public User_Response_DTO getUserResponseDto() {
-        return userResponseDto;
+    public User_Response_DTO getUser() {
+        return user;
     }
 
-    public void setUserResponseDto(User_Response_DTO userResponseDto) {
-        this.userResponseDto = userResponseDto;
+    public void setUser(User_Response_DTO user) {
+        this.user = user;
     }
 
     public String getContents() {
@@ -65,12 +126,12 @@ public class Comment_DTO_Response {
         this.date = date;
     }
 
-    public Long getParent_yorum_id() {
-        return parent_yorum_id;
+    public Long getParentCommentId() {
+        return parentCommentId;
     }
 
-    public void setParent_yorum_id(Long parent_yorum_id) {
-        this.parent_yorum_id = parent_yorum_id;
+    public void setParentCommentId(Long parentCommentId) {
+        this.parentCommentId = parentCommentId;
     }
 
     public Long getComment_id() {
@@ -87,5 +148,54 @@ public class Comment_DTO_Response {
 
     public void setLiked(boolean liked) {
         isLiked = liked;
+    }
+
+    public String getParentCommentUsername() {
+        return parentCommentUsername;
+    }
+
+    public void setParentCommentUsername(String parentCommentUsername) {
+        this.parentCommentUsername = parentCommentUsername;
+    }
+
+
+    public boolean isEdited() {
+        return isEdited;
+    }
+
+    public void setEdited(boolean edited) {
+        isEdited = edited;
+    }
+
+    public LocalDateTime getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(LocalDateTime updateDate) {
+        this.updateDate = updateDate;
+    }
+
+    public boolean isPinned() {
+        return isPinned;
+    }
+
+    public void setPinned(boolean pinned) {
+        isPinned = pinned;
+    }
+
+    public Long getPostUserId() {
+        return postUserId;
+    }
+
+    public void setPostUserId(Long postUserId) {
+        this.postUserId = postUserId;
+    }
+
+    public Long getSubCommentsCount() {
+        return subCommentsCount;
+    }
+
+    public void setSubCommentsCount(Long subCommentsCount) {
+        this.subCommentsCount = subCommentsCount;
     }
 }

@@ -35,13 +35,15 @@ public class Comment_Controller {
     }
 
     @GetMapping("/commentsGet")
-    public List<Comment_DTO_Response>commentsGet(
+    public List<Comment_DTO_Response> commentsGet(
             @RequestParam Long postId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
         Long userId= userService.getCurrentUserId();
-        return commentService.commentsGet(postId,userId,page,size);
+
+        List<Comment_DTO_Response> comments=commentService.commentsGet(postId,userId,page,size);
+        return comments;
     }
 
     @GetMapping("/subCommentsGet")
@@ -51,47 +53,20 @@ public class Comment_Controller {
             @RequestParam(defaultValue = "8") int size
     ){
         Long userId= userService.getCurrentUserId();
-        return commentService.subCommentsGet(parentCommentId,userId,page,size);
+
+        List<Comment_DTO_Response>comments= commentService.subCommentsGet(parentCommentId,userId,page,size);
+
+        return comments;
     }
 
     @PostMapping("/{commentId}/like")
-    public ResponseEntity<Map<String, String>> toggleLike(
-            @PathVariable Long commentId
-    ) {
-        Map<String, String> message = new HashMap<>();
-        Long userId= userService.getCurrentUserId();
-        try {
-            String result = commentService.toggleLike(commentId,userId);
-            message.put("message", result);
-            return ResponseEntity.ok(message);
-        } catch (CustomExceptions.AuthenticationException e) {
-            message.put("error",e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        } catch (Exception e) {
-            message.put("error",e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(message);
-        }
-    }
+    public ResponseEntity<Comment_DTO_Response> toggleLike(@PathVariable Long commentId) {
 
-    @Transactional
-    @GetMapping("/{commentId}/getUsersWhoLike")
-    public ResponseEntity<List<User_Response_DTO>> getUsersWhoLike(
-            @PathVariable Long commentId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Long currentUserId= userService.getCurrentUserId();
-        try {
-            List<User_Response_DTO> users = commentService.users_who_like(commentId,currentUserId,page,size);
-            if (users.isEmpty()) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.ok(users);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
+        Long userId = userService.getCurrentUserId();
+        Comment_DTO_Response response =
+                commentService.toggleLike(commentId, userId);
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{commentId}/deleteComment")
@@ -106,14 +81,29 @@ public class Comment_Controller {
     }
 
     @PutMapping("/{commentId}/updateComment")
-    public ResponseEntity<Map<String, String>>UpdatePost(
+    public Comment_DTO_Response UpdatePost(
             @PathVariable Long commentId,
             @Valid @RequestBody Comment_DTO_Update commentDtoUpdate
     ) {
-        Map<String, String> message = new HashMap<>();
         Long userId= userService.getCurrentUserId();
-        commentService.updateComment(commentId,userId,commentDtoUpdate);
-        message.put("message", "Post başarıyla güncellendi.");
-        return ResponseEntity.ok(message);
+        return commentService.updateComment(commentId,userId,commentDtoUpdate);
+    }
+
+    @PatchMapping("/{commentId}/pin")
+    public Comment_DTO_Response pinComment(
+            @PathVariable Long commentId
+    ) {
+        Long userId= userService.getCurrentUserId();
+
+        return commentService.pinComment(commentId, userId);
+    }
+
+    @PatchMapping("/{commentId}/removePin")
+    public Comment_DTO_Response pinDelete(
+            @PathVariable Long commentId
+    ) {
+        Long userId= userService.getCurrentUserId();
+
+        return commentService.removePin(commentId, userId);
     }
 }

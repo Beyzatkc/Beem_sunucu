@@ -7,10 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface Comment_Like_Repo extends JpaRepository<Comment_Like,Long> {
-    Optional<Comment_Like>findByComment_CommentIdAndUser_Id(Long commentId, Long userId);
+    List<Comment_Like> findByComment_CommentIdInAndUser_Id(List<Long> commentIds, Long userId);
+
+    Optional<Comment_Like> findByComment_CommentIdAndUser_Id(Long commentId,Long userId);
+
     boolean existsByComment_CommentIdAndUser_Id(Long commentId, Long userId);
     @Query(
             value = """

@@ -25,6 +25,11 @@ public class User_Response_DTO {
         this.biography = user.getBiography();
         this.emailVerified=user.isEmailVerified();
     }
+    public User_Response_DTO(Long id, String username) {
+        this.id = id;
+        this.username = username;
+    }
+
 
     public Long getId() {
         return id;

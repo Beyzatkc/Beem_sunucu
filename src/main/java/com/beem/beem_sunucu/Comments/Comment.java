@@ -3,6 +3,8 @@ package com.beem.beem_sunucu.Comments;
 import com.beem.beem_sunucu.Posts.Post;
 import com.beem.beem_sunucu.Users.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,7 +19,8 @@ public class Comment {
     private Long commentId;
 
     @ManyToOne
-    @JoinColumn(name = "post_id",nullable = false)
+    @JoinColumn(name = "post_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Post post;
 
     @ManyToOne
@@ -33,16 +36,28 @@ public class Comment {
     @Column(nullable = false,name = "commentDate")
     private LocalDateTime commentDate;
 
+    @Column(name = "upDate")
+    private LocalDateTime updateDate;
+
     @ManyToOne
     @JoinColumn(name = "parent_comment_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Comment parentComment;
 
+    @Column(name = "is_pinned")
+    private Boolean isPinned = false;
 
-    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> subComments=new ArrayList<>();
+    @Column(name ="pinned_count")
+    private Long subCommentsCount=0L;
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment_Like> likes=new ArrayList<>();
+    @Column(name="whos_reply")
+    private String whosReply;
+
+    @OneToMany(mappedBy = "parentComment", orphanRemoval = true)
+    private List<Comment> subComments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "comment", orphanRemoval = true)
+    private List<Comment_Like> likes = new ArrayList<>();
 
 
 
@@ -94,11 +109,21 @@ public class Comment {
         this.commentDate = commentDate;
     }
 
+    public LocalDateTime getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(LocalDateTime updateDate) {
+        this.updateDate = updateDate;
+    }
+
     public Comment getParentYorum() {
+
         return parentComment;
     }
 
     public void setParentYorum(Comment parentYorum) {
+
         this.parentComment = parentYorum;
     }
 
@@ -108,5 +133,29 @@ public class Comment {
 
     public void setSubComments(List<Comment> subComments) {
         this.subComments = subComments;
+    }
+
+    public Boolean getPinned() {
+        return isPinned;
+    }
+
+    public void setPinned(Boolean pinned) {
+        isPinned = pinned;
+    }
+
+    public Long getSubCommentsCount() {
+        return subCommentsCount;
+    }
+
+    public void setSubCommentsCount(Long subCommentsCount) {
+        this.subCommentsCount = subCommentsCount;
+    }
+
+    public String getWhosReply() {
+        return whosReply;
+    }
+
+    public void setWhosReply(String whosReply) {
+        this.whosReply = whosReply;
     }
 }
